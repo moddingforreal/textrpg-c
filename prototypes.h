@@ -16,7 +16,7 @@ typedef struct Entity {
 	double attack;
 	double level;
 	double xp;
-	double[][] inventory;
+	double inventory[4][5];
 } Entity;
 typedef struct Player {
 	Entity self;

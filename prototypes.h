@@ -1,12 +1,14 @@
 // Structs
-typedef struct Coordinates {
+typedef struct Coordinates
+{
 	double xPos;
 	double yPos;
 	double Stage;
 } Coordinates;
-typedef struct Entity {
+typedef struct Entity
+{
 	Coordinates position;
-	
+
 	// base attributes
 	double baseHealth;
 	double baseAttack;
@@ -18,11 +20,13 @@ typedef struct Entity {
 	double xp;
 	double inventory[4][5];
 } Entity;
-typedef struct Player {
+typedef struct Player
+{
 	Entity self;
 } Player;
 
-typedef struct Statistics {
+typedef struct Statistics
+{
 	// # of times the player killed xyz
 	double killsSlime;
 	double killsZombie;
@@ -57,4 +61,6 @@ typedef struct Statistics {
 
 // Function prototypes
 
-
+int parseArgs(int argc, char *argv[]);
+int runGame();
+int getInput(char prompt[], int max);

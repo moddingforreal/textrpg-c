@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 	if (parseArgs(argc, argv) != 0) {
 		return -1;
 	}
-	log(3, "Running game...");
+	log_(3, "Running game...");
 	runGame();
 	printf("Goodbye!");
 	return 0;
@@ -47,10 +47,10 @@ int parseArgs(int argc, char *argv[]) {
 
 int runGame() {
 	printf("Welcome to TextRPG!\nType \"help\" to view a list of available commands\nType \"exit\" to exit the game\n\n");
-	char input[255] = calloc(255);
-	while (strcmp(input, "exit") != 0) {
-		// Assign value to input using strcpy
-		strcpy(input, getInput("> ", 255));
+	int exit = 0;
+	while (exit != 1) {
+		char* input = getInput("> ", 255);
+
 		// Switch statements for strings don't exist
 		// so we have to use if-else ladders
 		// First check if extended commands (devmode)
@@ -64,11 +64,14 @@ int runGame() {
 				break;
 			} else if (strcmp(input, "help") == 0) {
 				printf("To be implemented.\n");
-			} else {
+			} /*else if(strcmp() == 0) {
+				
+			}*/ else {
 				clearScreen();
 				printf("Invalid command!\n");
 			}
 		}
+		free(input);
 	}
 
 	printf("Game ended!\n");
@@ -78,15 +81,14 @@ int runGame() {
 
 char* getInput(char prompt[], int max) {
 	printf(prompt);
-	while (1) {
-		char input[max];
-		fgets(input, sizeof(input), stdin);
-		char* readInput = calloc(max);
-		return readInput;
-	}
+	char input[max];
+	fgets(input, sizeof(input), stdin);
+	char* readInput = calloc(max, sizeof(char));
+	strcpy(input, readInput);
+	return readInput;
 }
 
-int log(int logLvl, char msg[]) {
+int log_(int logLvl, char msg[]) {
 	/* Logging convention for textrpg-c: 
 	 * Level 0 : All logs suppressed 
 	 * Level 1 : Recoverable errors (+ previous)
@@ -134,4 +136,7 @@ void clearScreen() {
 	// Should work cross-system
 	// to clear screen reliably
 	printf("\e[1;1H\e[2J");
+}
+char* getCharSeq(char input[], int begin, int end) {
+	char* charSeq = calloc((end - begin) + 1, sizeof(char));
 }

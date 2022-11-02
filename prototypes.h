@@ -63,4 +63,8 @@ typedef struct Statistics
 
 int parseArgs(int argc, char *argv[]);
 int runGame();
-int getInput(char prompt[], int max);
+char* getInput(char prompt[], int max);
+int isInRangeInt(int value, int lowerBound, int upperBound);
+double distance2D(Coordinates position1, Coordinates position2);
+double square(double x);
+void clearScreen();

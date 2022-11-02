@@ -1,8 +1,8 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
 #include "prototypes.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // Flags
 int devmode = 0;
@@ -30,7 +30,7 @@ int parseArgs(int argc, char *argv[]) {
 				godmode = 1;
 			} else if (strcmp(argv[i], "-l") == 0) {
 				if (i + 1 < argc) {
-					logging_level = (int)strtol(argv[++i],(char **)NULL, 10);
+					logging_level = (int)strtol(argv[++i], (char **)NULL, 10);
 				}
 			}
 		}
@@ -49,8 +49,7 @@ int runGame() {
 	printf("Welcome to TextRPG!\nType \"help\" to view a list of available commands\nType \"exit\" to exit the game\n\n");
 	int exit = 0;
 	while (exit != 1) {
-		char* input = getInput("> ", 255);
-
+		char *input = getInput("> ", 255);
 		// Switch statements for strings don't exist
 		// so we have to use if-else ladders
 		// First check if extended commands (devmode)
@@ -65,8 +64,9 @@ int runGame() {
 			} else if (strcmp(input, "help") == 0) {
 				printf("To be implemented.\n");
 			} /*else if(strcmp() == 0) {
-				
-			}*/ else {
+
+			}*/
+			else {
 				clearScreen();
 				printf("Invalid command!\n");
 			}
@@ -79,36 +79,35 @@ int runGame() {
 	return 0;
 }
 
-char* getInput(char prompt[], int max) {
+char *getInput(char prompt[], int max) {
 	printf(prompt);
-	char input[max];
-	fgets(input, sizeof(input), stdin);
-	char* readInput = calloc(max, sizeof(char));
-	strcpy(input, readInput);
-	return readInput;
+	char *input = calloc(max, sizeof(char));
+	fgets(input, max, stdin);
+	input[strcspn(input, "\r\n")] = 0;
+	return input;
 }
 
 int log_(int logLvl, char msg[]) {
-	/* Logging convention for textrpg-c: 
-	 * Level 0 : All logs suppressed 
+	/* Logging convention for textrpg-c:
+	 * Level 0 : All logs suppressed
 	 * Level 1 : Recoverable errors (+ previous)
 	 * Level 2 : Warnings (+ previous)
 	 * Level 3 : Debug, full logs (+ previous)
 	 * Fatal/Terminating errors will always notify the user
 	 */
 	if (!(logLvl > logging_level)) {
-		switch(logLvl) {
-			case 0:
-				printf("[FATAL] %s", msg);
-				break;
-			case 1:
-				printf("[ERROR] %s", msg);
-				break;
-			case 2:
-				printf("[WARN] %s", msg);
-				break;
-			case 3:
-				printf("[DEBUG] %s", msg);
+		switch (logLvl) {
+		case 0:
+			printf("[FATAL] %s", msg);
+			break;
+		case 1:
+			printf("[ERROR] %s", msg);
+			break;
+		case 2:
+			printf("[WARN] %s", msg);
+			break;
+		case 3:
+			printf("[DEBUG] %s", msg);
 		}
 		return 0;
 	} else {
@@ -128,15 +127,15 @@ int isInRangeInt(int value, int lowerBound, int upperBound) {
 	}
 }
 double distance2D(Coordinates position1, Coordinates position2) {
-	return abs(sqrt(square(position2.xPos - position1.xPos) 
-			+ square(position2.yPos - position1.yPos)));
+	return abs(sqrt(square(position2.xPos - position1.xPos) +
+					square(position2.yPos - position1.yPos)));
 }
-double square(double x) { return x*x; }
+double square(double x) { return x * x; }
 void clearScreen() {
 	// Should work cross-system
 	// to clear screen reliably
 	printf("\e[1;1H\e[2J");
 }
-char* getCharSeq(char input[], int begin, int end) {
-	char* charSeq = calloc((end - begin) + 1, sizeof(char));
+char *getCharSeq(char input[], int begin, int end) {
+	char *charSeq = calloc((end - begin) + 1, sizeof(char));
 }

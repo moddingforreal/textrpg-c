@@ -3,7 +3,7 @@ typedef struct Coordinates
 {
 	double xPos;
 	double yPos;
-	double Stage;
+	double stage;
 } Coordinates;
 typedef struct Entity
 {
@@ -69,3 +69,5 @@ double distance2D(Coordinates position1, Coordinates position2);
 double square(double x);
 void clearScreen();
 int log_(int logLvl, char msg[]);
+char* getCharSeq(char input[], int begin, int end);
+int playerInit(Player player);

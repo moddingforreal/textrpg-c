@@ -10,6 +10,8 @@ int godmode = 0;
 int logging_level = 0;
 
 int main(int argc, char *argv[]) {
+	log_(3, "Welcome to TextRPG C edition!");
+	log_(3, "Logging for you!");
 	// Parsing arguments
 	if (parseArgs(argc, argv) != 0) {
 		return -1;
@@ -47,8 +49,25 @@ int parseArgs(int argc, char *argv[]) {
 
 int runGame() {
 	printf("Welcome to TextRPG!\nType \"help\" to view a list of available commands\nType \"exit\" to exit the game\n\n");
+	log_(3, "Creating player");
+	Player player;
+	log_(3, "Initializing player...");
+	playerInit(player);
 	int exit = 0;
+	int loopIteration = 0;
+	log_(3, "Entering command loop!");
 	while (exit != 1) {
+		log_(3, "Loop iteration started!");
+		loopIteration++;
+		printf("Coordinates: %lf, %lf @ stage %lf\n", 
+				player.self.position.xPos, 
+				player.self.position.yPos, 
+				player.self.position.stage);
+		printf("Health/Attack/Level/XP: %lf/%lf/%lf/%lf/%lf\n", 
+				player.self.health, 
+				player.self.attack, 
+				player.self.level, 
+				player.self.xp);
 		char *input = getInput("> ", 255);
 		// Switch statements for strings don't exist
 		// so we have to use if-else ladders
@@ -60,12 +79,21 @@ int runGame() {
 		} else {
 			// Go into the normal commands
 			if (strcmp(input, "exit") == 0) {
+				log_(3, "Command 'exit' invoked! Breaking out of command loop!");
 				break;
 			} else if (strcmp(input, "help") == 0) {
+				log_(3, "Command 'help' invoked! The command has not been implemented yet!");
 				printf("To be implemented.\n");
-			} /*else if(strcmp() == 0) {
-
-			}*/
+			} else if(strcmp(getCharSeq(input, 0, 5), "move") == 0) {
+				log_(3, "Command 'move' invoked!");
+				if (strcmp(getCharSeq(input, 6, 7), "x") == 0) {
+					log_(3, "Moving on the x axis!");
+					int toMove = atoi(getCharSeq(input, 8, 255));
+					player.self.position.xPos =
+						player.self.position.xPos + toMove;
+					log_(3, "Moved on the x axis!");
+				}
+			}
 			else {
 				clearScreen();
 				printf("Invalid command!\n");
@@ -98,16 +126,16 @@ int log_(int logLvl, char msg[]) {
 	if (!(logLvl > logging_level)) {
 		switch (logLvl) {
 		case 0:
-			printf("[FATAL] %s", msg);
+			printf("[FATAL] %s\n", msg);
 			break;
 		case 1:
-			printf("[ERROR] %s", msg);
+			printf("[ERROR] %s\n", msg);
 			break;
 		case 2:
-			printf("[WARN] %s", msg);
+			printf("[WARN] %s\n", msg);
 			break;
 		case 3:
-			printf("[DEBUG] %s", msg);
+			printf("[DEBUG] %s\n", msg);
 		}
 		return 0;
 	} else {
@@ -116,6 +144,42 @@ int log_(int logLvl, char msg[]) {
 		// with this
 		return logLvl;
 	}
+}
+
+// Init player
+int playerInit(Player player) {
+	// Make players entity attribute
+	Entity playerEntity;
+
+	// Initialize player's entity's position
+	Coordinates playerPos;
+	playerPos.xPos = 0;
+	playerPos.yPos = 0;
+	playerPos.stage = 0;
+
+	// Assign player's position
+	playerEntity.position = playerPos;
+
+	// Set playerEntity attributes
+	playerEntity.baseHealth = 10; // Will be retained upon death
+	playerEntity.baseAttack = 10;
+	
+	playerEntity.health = playerEntity.baseHealth; // Will be reset upon death
+	playerEntity.attack = playerEntity.baseAttack;
+	playerEntity.level = 1;
+	playerEntity.xp = 0;
+
+	// Item IDs, 0 for nothing. Each slot can only keep 1 item
+	// Initialized to only 0s => empty inventory
+	for(int i = 0; i < 4; i++) {
+		for(int j = 0; j < 5; j++) {
+			player.self.inventory[i][j] = 0;
+		}
+	}
+
+	// Assign playerEntity to player
+	player.self = playerEntity;
+	return 0;
 }
 
 // Auxiliary functions
@@ -137,5 +201,8 @@ void clearScreen() {
 	printf("\e[1;1H\e[2J");
 }
 char *getCharSeq(char input[], int begin, int end) {
-	char *charSeq = calloc((end - begin) + 1, sizeof(char));
+	int range = end - begin; // Get size of ret
+	char* ret = malloc(range * sizeof(char));
+	strncpy(ret, input+begin, end);
+	return ret;
 }

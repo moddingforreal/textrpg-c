@@ -70,4 +70,5 @@ double square(double x);
 void clearScreen();
 int log_(int logLvl, char msg[]);
 char* getCharSeq(char input[], int begin, int end);
-int playerInit(Player player);
+int playerInit(Player *player);
+int cmpSeq(char input[], int offset, char compareTo[]);

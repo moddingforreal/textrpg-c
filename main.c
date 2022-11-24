@@ -52,7 +52,7 @@ int runGame() {
 	log_(3, "Creating player");
 	Player player;
 	log_(3, "Initializing player...");
-	playerInit(player);
+	playerInit(&player);
 	int exit = 0;
 	int loopIteration = 0;
 	log_(3, "Entering command loop!");
@@ -63,7 +63,7 @@ int runGame() {
 				player.self.position.xPos, 
 				player.self.position.yPos, 
 				player.self.position.stage);
-		printf("Health/Attack/Level/XP: %lf/%lf/%lf/%lf/%lf\n", 
+		printf("Health/Attack/Level/XP: %lf/%lf/%lf/%lf\n", 
 				player.self.health, 
 				player.self.attack, 
 				player.self.level, 
@@ -80,22 +80,27 @@ int runGame() {
 			// Go into the normal commands
 			if (strcmp(input, "exit") == 0) {
 				log_(3, "Command 'exit' invoked! Breaking out of command loop!");
-				break;
+				exit = 1;
 			} else if (strcmp(input, "help") == 0) {
 				log_(3, "Command 'help' invoked! The command has not been implemented yet!");
 				printf("To be implemented.\n");
-			} else if(strcmp(getCharSeq(input, 0, 5), "move") == 0) {
+			} else if(cmpSeq(input, 0, "move")) {
 				log_(3, "Command 'move' invoked!");
-				if (strcmp(getCharSeq(input, 6, 7), "x") == 0) {
+				int toMove = atoi(input + 7 * sizeof(char));
+				if (cmpSeq(input, 5, "x")) {
 					log_(3, "Moving on the x axis!");
-					int toMove = atoi(getCharSeq(input, 8, 255));
 					player.self.position.xPos =
 						player.self.position.xPos + toMove;
 					log_(3, "Moved on the x axis!");
+				} else if (cmpSeq(input, 5, "y")) {
+					log_(3, "Moving on the y axis!");
+					player.self.position.yPos =
+						player.self.position.yPos + toMove;
+					log_(3, "Moved on the y axis!");
 				}
 			}
 			else {
-				clearScreen();
+				//clearScreen();
 				printf("Invalid command!\n");
 			}
 		}
@@ -147,7 +152,7 @@ int log_(int logLvl, char msg[]) {
 }
 
 // Init player
-int playerInit(Player player) {
+int playerInit(Player *player) {
 	// Make players entity attribute
 	Entity playerEntity;
 
@@ -173,12 +178,12 @@ int playerInit(Player player) {
 	// Initialized to only 0s => empty inventory
 	for(int i = 0; i < 4; i++) {
 		for(int j = 0; j < 5; j++) {
-			player.self.inventory[i][j] = 0;
+			playerEntity.inventory[i][j] = 0;
 		}
 	}
 
 	// Assign playerEntity to player
-	player.self = playerEntity;
+	player->self = playerEntity;
 	return 0;
 }
 
@@ -203,6 +208,15 @@ void clearScreen() {
 char *getCharSeq(char input[], int begin, int end) {
 	int range = end - begin; // Get size of ret
 	char* ret = malloc(range * sizeof(char));
-	strncpy(ret, input+begin, end);
+	strncpy(ret, input + begin, range);
 	return ret;
+}
+
+// compares the input beginning from offset to compareTo, returns 1 if all chars match untill the end of compareTo is reached
+int cmpSeq(char input[], int offset, char compareTo[]) {
+	for(int i = 0; compareTo[i] != 0; i++) {
+		if(input[i + offset] == 0 || input[i + offset]  != compareTo[i])
+			return 0;
+	}
+	return 1;
 }

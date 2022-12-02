@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "stringfuncs.h"
 
 // Flags
 int devmode = 0;
@@ -68,7 +69,11 @@ int runGame() {
 				player.self.attack, 
 				player.self.level, 
 				player.self.xp);
-		char *input = getInput("> ", 255);
+		char input[255];
+		getInput(input, 255, "> ");
+		CharSpan args[3];
+		int argCount = split(args, 3, input, " ");
+		CharSpan *arg0 = &args[0];
 		// Switch statements for strings don't exist
 		// so we have to use if-else ladders
 		// First check if extended commands (devmode)
@@ -78,46 +83,50 @@ int runGame() {
 			// To be implemented
 		} else {
 			// Go into the normal commands
-			if (strcmp(input, "exit") == 0) {
+			if (compareSpan(arg0, "exit")) {
 				log_(3, "Command 'exit' invoked! Breaking out of command loop!");
 				exit = 1;
-			} else if (strcmp(input, "help") == 0) {
+			} else if (compareSpan(arg0, "help")) {
 				log_(3, "Command 'help' invoked! The command has not been implemented yet!");
 				printf("To be implemented.\n");
-			} else if(cmpSeq(input, 0, "move")) {
+			} else if(compareSpan(arg0, "move")) {
 				log_(3, "Command 'move' invoked!");
-				int toMove = atoi(input + 7 * sizeof(char));
-				if (cmpSeq(input, 5, "x")) {
-					log_(3, "Moving on the x axis!");
-					player.self.position.xPos =
-						player.self.position.xPos + toMove;
-					log_(3, "Moved on the x axis!");
-				} else if (cmpSeq(input, 5, "y")) {
-					log_(3, "Moving on the y axis!");
-					player.self.position.yPos =
-						player.self.position.yPos + toMove;
-					log_(3, "Moved on the y axis!");
+				if(argCount >= 3) {
+					int toMove = spanToInt(args[2]);
+					CharSpan *arg1 = &args[1];
+					if (compareSpan(arg1, "x")) {
+						log_(3, "Moving on the x axis!");
+						player.self.position.xPos =
+							player.self.position.xPos + toMove;
+						log_(3, "Moved on the x axis!");
+					} else if (compareSpan(arg1, "y")) {
+						log_(3, "Moving on the y axis!");
+						player.self.position.yPos =
+							player.self.position.yPos + toMove;
+						log_(3, "Moved on the y axis!");
+					} else {
+						printf("Invalid direction\n");
+					}
+				} else {
+					printf("Not enough args for print provided: move <direction> <amount>\n");
 				}
+
 			}
 			else {
-				//clearScreen();
+				clearScreen();
 				printf("Invalid command!\n");
 			}
 		}
-		free(input);
 	}
-
 	printf("Game ended!\n");
 
 	return 0;
 }
 
-char *getInput(char prompt[], int max) {
+void getInput(char *result, int max, char prompt[]) {
 	printf(prompt);
-	char *input = calloc(max, sizeof(char));
-	fgets(input, max, stdin);
-	input[strcspn(input, "\r\n")] = 0;
-	return input;
+	fgets(result, max, stdin);
+	result[strcspn(result, "\r\n")] = 0;
 }
 
 int log_(int logLvl, char msg[]) {
@@ -210,13 +219,4 @@ char *getCharSeq(char input[], int begin, int end) {
 	char* ret = malloc(range * sizeof(char));
 	strncpy(ret, input + begin, range);
 	return ret;
-}
-
-// compares the input beginning from offset to compareTo, returns 1 if all chars match untill the end of compareTo is reached
-int cmpSeq(char input[], int offset, char compareTo[]) {
-	for(int i = 0; compareTo[i] != 0; i++) {
-		if(input[i + offset] == 0 || input[i + offset]  != compareTo[i])
-			return 0;
-	}
-	return 1;
 }

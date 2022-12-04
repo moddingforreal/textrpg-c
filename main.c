@@ -9,12 +9,8 @@
 #define TRUE 1
 #define FALSE 0
 
-// Check if OS is Windows type
-int windows = FALSE;
-
 #ifdef _WIN32
 #include <conio.h>
-windows = TRUE;
 #endif
 
 // Flags

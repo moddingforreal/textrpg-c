@@ -9,14 +9,6 @@
 #define TRUE 1
 #define FALSE 0
 
-// Check if OS is Windows type
-int windows = FALSE;
-
-#ifdef _WIN32
-#include <conio.h>
-windows = TRUE;
-#endif
-
 // Flags
 int devmode = 0;
 int godmode = 0;
@@ -271,11 +263,8 @@ double square(double x) { return x * x; }
 void clearScreen() {
 	// Should work cross-system
 	// to clear screen reliably
-	#ifdef _WIN32
-		clrscr();
-	#else
-		printf("\e[1;1H\e[2J");
-	#endif
+	system("@cls||clear");
+	// 	printf("\e[1;1H\e[2J");
 }
 char *getCharSeq(char input[], int begin, int end) {
 	int range = end - begin; // Get size of ret

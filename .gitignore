@@ -54,3 +54,6 @@ dkms.conf
 
 # Compiled result
 ./main
+
+# Logfiles
+*.log

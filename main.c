@@ -15,7 +15,7 @@ int godmode = 0;
 int logging_level = 0;
 
 // Shared
-FILE *logFilePtr;
+FILE *logFilePtr; // Pointer to logfile
 
 int main(int argc, char *argv[]) {
 	log_(3, "Welcome to TextRPG C edition!");
@@ -84,6 +84,7 @@ int runGame() {
 				(int) player.self.xp);
 		char input[255];
 		getInput(input, 255, "> ");
+		clearScreen(); // Clear screen after input has been submitted
 		CharSpan args[3];
 		int argCount = split(args, 3, input, " ");
 		CharSpan *arg0 = &args[0];
@@ -145,7 +146,6 @@ int runGame() {
 			else {
 				commandValid = FALSE;
 			}
-			clearScreen();
 		}
 	}
 	stopLog();

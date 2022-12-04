@@ -72,3 +72,5 @@ int log_(int logLvl, char msg[]);
 char* getCharSeq(char input[], int begin, int end);
 int playerInit(Player *player);
 int cmpSeq(char input[], int offset, char compareTo[]);
+int initLog(int logLvl);
+int stopLog();

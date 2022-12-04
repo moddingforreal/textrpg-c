@@ -4,11 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include "stringfuncs.h"
+#include <time.h>
+
+#define TRUE 1
+#define FALSE 0
 
 // Flags
 int devmode = 0;
 int godmode = 0;
 int logging_level = 0;
+
+// Shared
+FILE *logFilePtr;
 
 int main(int argc, char *argv[]) {
 	log_(3, "Welcome to TextRPG C edition!");
@@ -17,6 +24,7 @@ int main(int argc, char *argv[]) {
 	if (parseArgs(argc, argv) != 0) {
 		return -1;
 	}
+	initLog(logging_level);
 	log_(3, "Running game...");
 	runGame();
 	printf("Goodbye!");
@@ -55,20 +63,25 @@ int runGame() {
 	log_(3, "Initializing player...");
 	playerInit(&player);
 	int exit = 0;
+	int commandValid = TRUE;
 	int loopIteration = 0;
 	log_(3, "Entering command loop!");
 	while (exit != 1) {
 		log_(3, "Loop iteration started!");
 		loopIteration++;
-		printf("Coordinates: %lf, %lf @ stage %lf\n", 
-				player.self.position.xPos, 
-				player.self.position.yPos, 
-				player.self.position.stage);
-		printf("Health/Attack/Level/XP: %lf/%lf/%lf/%lf\n", 
-				player.self.health, 
-				player.self.attack, 
-				player.self.level, 
-				player.self.xp);
+		if (commandValid != TRUE) {
+			printf("Invalid command!\n"); // Notify player when the previous command was invalid
+			commandValid = TRUE;
+		}
+		printf("Coordinates: %d, %d @ stage %d\n", 
+				(int) player.self.position.xPos, 
+				(int )player.self.position.yPos, 
+				(int )player.self.position.stage);
+		printf("Health/Attack/Level/XP: %d/%d/%d/%d\n", 
+				(int) player.self.health, 
+				(int) player.self.attack, 
+				(int) player.self.level, 
+				(int) player.self.xp);
 		char input[255];
 		getInput(input, 255, "> ");
 		CharSpan args[3];
@@ -87,8 +100,11 @@ int runGame() {
 				log_(3, "Command 'exit' invoked! Breaking out of command loop!");
 				exit = 1;
 			} else if (compareSpan(arg0, "help")) {
-				log_(3, "Command 'help' invoked! The command has not been implemented yet!");
-				printf("To be implemented.\n");
+				log_(3, "Command 'help' invoked!");
+				printf("==         LIST OF AVAILABLE COMMANDS         ==\n");
+				printf("help                          | shows this list \n");
+				printf("exit                          | exits the game  \n");
+				printf("move <direction:x|y> <amount> | moves the player\n");
 			} else if(compareSpan(arg0, "move")) {
 				log_(3, "Command 'move' invoked!");
 				if(argCount >= 3) {
@@ -98,26 +114,41 @@ int runGame() {
 						log_(3, "Moving on the x axis!");
 						player.self.position.xPos =
 							player.self.position.xPos + toMove;
+						if (player.self.position.xPos > 12) {
+							player.self.position.xPos = 12;
+							log_(2, "Player attempted to move out of bounds! (x > 12)");
+						} else if (player.self.position.xPos < 0) {
+							player.self.position.xPos = 0;
+							log_(2, "Player attempted to move out of bounds! (x < 0)");
+						} else;
 						log_(3, "Moved on the x axis!");
 					} else if (compareSpan(arg1, "y")) {
 						log_(3, "Moving on the y axis!");
 						player.self.position.yPos =
 							player.self.position.yPos + toMove;
+						if (player.self.position.yPos > 12) {
+							player.self.position.yPos = 12;
+							log_(2, "Player attempted to move out of bounds! (y > 12)");
+						} else if (player.self.position.yPos < 0) {
+							player.self.position.yPos = 0;
+							log_(2, "Player attempted to move out of bounds! (y < 0)");
+						} else;
 						log_(3, "Moved on the y axis!");
 					} else {
 						printf("Invalid direction\n");
 					}
 				} else {
-					printf("Not enough args for print provided: move <direction> <amount>\n");
+					printf("Not enough args for 'move' provided: move <direction> <amount>\n");
 				}
 
 			}
 			else {
-				clearScreen();
-				printf("Invalid command!\n");
+				commandValid = FALSE;
 			}
+			clearScreen();
 		}
 	}
+	stopLog();
 	printf("Game ended!\n");
 
 	return 0;
@@ -127,6 +158,18 @@ void getInput(char *result, int max, char prompt[]) {
 	printf(prompt);
 	fgets(result, max, stdin);
 	result[strcspn(result, "\r\n")] = 0;
+}
+
+int initLog(int logLvl) {
+	logFilePtr = fopen("./latest.log", "w");
+	fprintf(logFilePtr, "// Logging for textrpg game\n// Time (Unix timestamp): %d\n", (int)time(NULL));
+	fprintf(logFilePtr, "Successfully started logging!\n");
+	return 0;
+}
+
+int stopLog() {
+	fclose(logFilePtr);
+	return 0;
 }
 
 int log_(int logLvl, char msg[]) {
@@ -140,16 +183,24 @@ int log_(int logLvl, char msg[]) {
 	if (!(logLvl > logging_level)) {
 		switch (logLvl) {
 		case 0:
+			// Terminating errors will still notify the user if logging level is 0
+			// This is just for fatal errors that will break the game
+			// but not terminate it
 			printf("[FATAL] %s\n", msg);
+			fprintf(logFilePtr, "[FATAL] %s\n", msg);
 			break;
 		case 1:
 			printf("[ERROR] %s\n", msg);
+			fprintf(logFilePtr, "[ERROR] %s\n", msg);
 			break;
 		case 2:
 			printf("[WARN] %s\n", msg);
+			fprintf(logFilePtr, "[WARN] %s\n", msg);
 			break;
 		case 3:
 			printf("[DEBUG] %s\n", msg);
+			fprintf(logFilePtr, "[DEBUG] %s\n", msg);
+			break;
 		}
 		return 0;
 	} else {

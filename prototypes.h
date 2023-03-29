@@ -1,3 +1,4 @@
+#include "stringfuncs.h"
 // Structs
 typedef struct Coordinates
 {
@@ -75,3 +76,4 @@ int cmpSeq(char input[], int offset, char compareTo[]);
 int initLog(int logLvl);
 int stopLog();
 int generate(int type, Player *player);
+int movePlayer(CharSpan **args, Player *player, int argCount);

@@ -16,10 +16,14 @@ int logging_level = 0;
 
 // Shared
 FILE *logFilePtr; // Pointer to logfile
+// Entity entities_global[]; // Global list of generated entities, EXCLUDING PLAYER
+int passabilityBlock[12][12][12]; // Global list of nonpassable blocks [x][y][stage]
 
 int main(int argc, char *argv[]) {
 	log_(3, "Welcome to TextRPG C edition!");
 	log_(3, "Logging for you!");
+	log_(3, "Seeding random...");
+	srand(time(NULL));
 	// Parsing arguments
 	if (parseArgs(argc, argv) != 0) {
 		return -1;
@@ -62,6 +66,8 @@ int runGame() {
 	Player player;
 	log_(3, "Initializing player...");
 	playerInit(&player);
+	log_(3, "Starting terrain generation (type 0)...");
+	generate(0, &player);
 	int exit = 0;
 	int commandValid = TRUE;
 	int loopIteration = 0;
@@ -75,8 +81,8 @@ int runGame() {
 		}
 		printf("Coordinates: %d, %d @ stage %d\n", 
 				(int) player.self.position.xPos, 
-				(int )player.self.position.yPos, 
-				(int )player.self.position.stage);
+				(int) player.self.position.yPos, 
+				(int) player.self.position.stage);
 		printf("Health/Attack/Level/XP: %d/%d/%d/%d\n", 
 				(int) player.self.health, 
 				(int) player.self.attack, 
@@ -98,7 +104,7 @@ int runGame() {
 		} else {
 			// Go into the normal commands
 			if (compareSpan(arg0, "exit")) {
-				log_(3, "Command 'exit' invoked! Breaking out of command loop!");
+				log_(3, "[CMD] Command 'exit' invoked! Breaking out of command loop!");
 				exit = 1;
 			} else if (compareSpan(arg0, "help")) {
 				log_(3, "Command 'help' invoked!");
@@ -107,41 +113,8 @@ int runGame() {
 				printf("exit                          | exits the game  \n");
 				printf("move <direction:x|y> <amount> | moves the player\n");
 			} else if(compareSpan(arg0, "move")) {
-				log_(3, "Command 'move' invoked!");
-				if(argCount >= 3) {
-					int toMove = spanToInt(args[2]);
-					CharSpan *arg1 = &args[1];
-					if (compareSpan(arg1, "x")) {
-						log_(3, "Moving on the x axis!");
-						player.self.position.xPos =
-							player.self.position.xPos + toMove;
-						if (player.self.position.xPos > 12) {
-							player.self.position.xPos = 12;
-							log_(2, "Player attempted to move out of bounds! (x > 12)");
-						} else if (player.self.position.xPos < 0) {
-							player.self.position.xPos = 0;
-							log_(2, "Player attempted to move out of bounds! (x < 0)");
-						} else;
-						log_(3, "Moved on the x axis!");
-					} else if (compareSpan(arg1, "y")) {
-						log_(3, "Moving on the y axis!");
-						player.self.position.yPos =
-							player.self.position.yPos + toMove;
-						if (player.self.position.yPos > 12) {
-							player.self.position.yPos = 12;
-							log_(2, "Player attempted to move out of bounds! (y > 12)");
-						} else if (player.self.position.yPos < 0) {
-							player.self.position.yPos = 0;
-							log_(2, "Player attempted to move out of bounds! (y < 0)");
-						} else;
-						log_(3, "Moved on the y axis!");
-					} else {
-						printf("Invalid direction\n");
-					}
-				} else {
-					printf("Not enough args for 'move' provided: move <direction> <amount>\n");
-				}
-
+				log_(3, "[CMD] Command 'move' invoked!");
+				movePlayer(&args, &player);
 			}
 			else {
 				commandValid = FALSE;
@@ -151,6 +124,97 @@ int runGame() {
 	stopLog();
 	printf("Game ended!\n");
 
+	return 0;
+}
+
+int movePlayer(CharSpan **args, Player *player) {
+	if(argCount >= 3) {
+		int toMove = spanToInt(args[2]);
+		CharSpan axis = &(*args)[1];
+		if (compareSpan(&axis, "x")) {
+			log_(3, "[MOV] Moving on the x axis!");
+			// Check for out of bounds and adjust accordingly
+			if (&player.self.position.xPos > 12) {
+				toMove = 12 - &player.self.position.xPos;
+				log_(2, "[MOV] Player attempted to move out of bounds! (x > 12)");
+			} else if (&player.self.position.xPos < 0) {
+				toMove = 12 - &player.self.position.xPos;
+				log_(2, "[MOV] Player attempted to move out of bounds! (x < 0)");
+			} else;
+
+			// Check for blocks in the way
+			int blocksInWay = FALSE;
+			for (int i = 0; i < toMove; i++) {
+				if (passabilityBlock[&player.self.position.xPos + i][&player.self.position.yPos][&player.self.position.stage] == 1) {
+					log_(3, "[MOV] Block in player path detected!");
+					blocksInWay = TRUE;
+					&player.self.position.xPos += (i-1);
+					break;
+				}
+			}
+			if (blocksInWay != 1) {
+				&player.self.position.xPos = &player.self.position.xPos + toMove;
+			}
+			log_(3, "[MOV] Moved on the x axis!");
+		} else if (compareSpan(&axis, "y")) {
+			log_(3, "[MOV] Moving on the y axis!");
+			// Check for out of bounds and adjust accordingly
+			if (&player.self.position.yPos > 12) {
+				toMove = 12 - &player.self.position.yPos;
+				log_(2, "[MOV] Player attempted to move out of bounds! (y > 12)");
+			} else if (&player.self.position.yPos < 0) {
+				toMove = 12 - &player.self.position.yPos;
+				log_(2, "[MOV] Player attempted to move out of bounds! (y < 0)");
+			} else;
+
+			// Check for blocks in the way
+			int blocksInWay = FALSE;
+			for (int i = 0; i < toMove; i++) {
+				if (passabilityBlock[&player.self.position.xPos][&player.self.position.yPos + i][&player.self.position.stage] == 1) {
+					log_(3, "[MOV] Block in player path detected!");
+					blocksInWay = TRUE;
+					&player.self.position.yPos += (i-1);
+					break;
+				}
+			}
+			if (blocksInWay != 1) {
+				&player.self.position.yPos = &player.self.position.yPos + toMove;
+			}
+			log_(3, "[MOV] Moved on the y axis!");
+		} else {
+			printf("Invalid direction\n");
+		}
+	} else {
+		printf("Not enough args for 'move' provided: move <direction> <amount>\n");
+	}
+	return 0;
+}
+
+/* Generation function, generates the world initially
+ * Types:
+ * Terrain: 0
+ * Entities: 1
+ * */
+int generate(int type, Player *player) {
+	log_(3, "[GEN] Entering generation for specified type...");
+	switch(type) {
+		default:
+			log_(2, "[GEN] ERR: Generation behavior for type undefined!");
+			break;
+		case 0:
+			for(int i = 0; i < 12; i++) {
+				for(int j = 0; j < 12; j++) {
+					for(int k = 0; k < 12; k++) {
+						passabilityBlock[i][j][k] = rand() % 2;
+						log_(3, "[GEN] Determined block for current position!");
+					}
+				}
+			}
+			break;
+		case 1:
+			// To be implemented
+			break;
+	}
 	return 0;
 }
 

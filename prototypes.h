@@ -74,3 +74,4 @@ int playerInit(Player *player);
 int cmpSeq(char input[], int offset, char compareTo[]);
 int initLog(int logLvl);
 int stopLog();
+int generate(int type, Player *player);

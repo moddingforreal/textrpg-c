@@ -113,7 +113,7 @@ int runGame() {
 				printf("move <direction:x|y> <amount> | moves the player\n");
 			} else if(compareSpan(arg0, "move")) {
 				log_(3, "[CMD] Command 'move' invoked!");
-				movePlayer(&args, &player, argCount);
+				movePlayer(args, &player, argCount);
 			}
 			else {
 				commandValid = FALSE;
@@ -126,20 +126,20 @@ int runGame() {
 	return 0;
 }
 
-int movePlayer(CharSpan **args, Player *player, int argCount) {
+int movePlayer(CharSpan *args, Player *player, int argCount) {
 	if(argCount >= 3) {
-		int toMove = spanToInt(*args[2]);
-		CharSpan axis = *args[1];
+		int toMove = spanToInt(args[2]);
+		CharSpan axis = args[1];
 		if (compareSpan(&axis, "x")) {
 			log_(3, "[MOV] Moving on the x axis!");
 			// Check for out of bounds and adjust accordingly
-			if (player->self.position.xPos > 12) {
+			if (player->self.position.xPos + toMove > 12) {
 				toMove = 12 - player->self.position.xPos;
 				log_(2, "[MOV] Player attempted to move out of bounds! (x > 12)");
-			} else if (player->self.position.xPos < 0) {
-				toMove = 12 - player->self.position.xPos;
+			} else if (player->self.position.xPos + toMove < 0) {
+				toMove = -player->self.position.xPos;
 				log_(2, "[MOV] Player attempted to move out of bounds! (x < 0)");
-			} else;
+			}
 
 			// Check for blocks in the way
 			int blocksInWay = FALSE;
@@ -147,24 +147,23 @@ int movePlayer(CharSpan **args, Player *player, int argCount) {
 				if (passabilityBlock[((int)player->self.position.xPos) + i][(int)player->self.position.yPos][(int)player->self.position.stage] == 1) {
 					log_(3, "[MOV] Block in player path detected!");
 					blocksInWay = TRUE;
-					player->self.position.xPos += (i-1);
 					break;
 				}
 			}
-			if (blocksInWay != 1) {
-				player->self.position.xPos = player->self.position.xPos + toMove;
+			if (!blocksInWay) {
+				player->self.position.xPos += toMove;
 			}
 			log_(3, "[MOV] Moved on the x axis!");
 		} else if (compareSpan(&axis, "y")) {
 			log_(3, "[MOV] Moving on the y axis!");
 			// Check for out of bounds and adjust accordingly
-			if (player->self.position.yPos > 12) {
+			if (player->self.position.yPos + toMove > 12) {
 				toMove = 12 - player->self.position.yPos;
 				log_(2, "[MOV] Player attempted to move out of bounds! (y > 12)");
-			} else if (player->self.position.yPos < 0) {
-				toMove = 12 - player->self.position.yPos;
+			} else if (player->self.position.yPos + toMove < 0) {
+				toMove = -player->self.position.yPos;
 				log_(2, "[MOV] Player attempted to move out of bounds! (y < 0)");
-			} else;
+			}
 
 			// Check for blocks in the way
 			int blocksInWay = FALSE;
@@ -172,12 +171,11 @@ int movePlayer(CharSpan **args, Player *player, int argCount) {
 				if (passabilityBlock[(int)player->self.position.xPos][((int)player->self.position.yPos) + i][(int)player->self.position.stage] == 1) {
 					log_(3, "[MOV] Block in player path detected!");
 					blocksInWay = TRUE;
-					player->self.position.yPos += (i-1);
 					break;
 				}
 			}
-			if (blocksInWay != 1) {
-				player->self.position.yPos = player->self.position.yPos + toMove;
+			if (!blocksInWay) {
+				player->self.position.yPos += toMove;
 			}
 			log_(3, "[MOV] Moved on the y axis!");
 		} else {

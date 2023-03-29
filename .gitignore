@@ -51,6 +51,8 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+output
+.vscode
 
 # Compiled result
 ./main

@@ -93,6 +93,7 @@ int runGame() {
 		CharSpan args[3];
 		int argCount = split(args, 3, input, " ");
 		CharSpan *arg0 = &args[0];
+		int devCommandInvoked = FALSE;
 		// Switch statements for strings don't exist
 		// so we have to use if-else ladders
 		// First check if extended commands (devmode)
@@ -100,22 +101,46 @@ int runGame() {
 		if (devmode == 1) {
 			// Check the dev commands
 			// To be implemented
-		} else {
-			// Go into the normal commands
-			if (compareSpan(arg0, "exit")) {
-				log_(3, "[CMD] Command 'exit' invoked! Breaking out of command loop!");
-				exit = 1;
-			} else if (compareSpan(arg0, "help")) {
-				log_(3, "Command 'help' invoked!");
-				printf("==         LIST OF AVAILABLE COMMANDS         ==\n");
-				printf("help                          | shows this list \n");
-				printf("exit                          | exits the game  \n");
-				printf("move <direction:x|y> <amount> | moves the player\n");
-			} else if(compareSpan(arg0, "move")) {
-				log_(3, "[CMD] Command 'move' invoked!");
-				movePlayer(args, &player, argCount);
+			if (compareSpan(arg0, "dev_help")) {
+				log_(3, "[DEV] DEV commands invoked!");
+				printf("map <stage> | shows a map of the specified stage\n");
+				devCommandInvoked = TRUE;
+			} else if (compareSpan(arg0, "map")) {
+				if (&args[1] != NULL) {
+					int cmd_stage = spanToInt(args[1]);
+					printf("Map for stage %d\n", &cmd_stage);
+					for (int j = 0; j <= 12; j++) {
+						for (int i = 0; i <= 12; i++) {
+							if (passabilityBlock[i][j][cmd_stage] != 0) {
+								printf("#");
+							} else {
+								printf("_");
+							}
+							if (i == 12) {
+								printf("\n");
+							}
+						}
+					}
+				}
+				devCommandInvoked = TRUE;
 			}
-			else {
+		}
+		// Go into the normal commands
+		if (compareSpan(arg0, "exit")) {
+			log_(3, "[CMD] Command 'exit' invoked! Breaking out of command loop!");
+			exit = 1;
+		} else if (compareSpan(arg0, "help")) {
+			log_(3, "Command 'help' invoked!");
+			printf("==         LIST OF AVAILABLE COMMANDS         ==\n");
+			printf("help                          | shows this list \n");
+			printf("exit                          | exits the game  \n");
+			printf("move <direction:x|y> <amount> | moves the player\n");
+		} else if(compareSpan(arg0, "move")) {
+			log_(3, "[CMD] Command 'move' invoked!");
+			movePlayer(args, &player, argCount);
+		}
+		else {
+			if (devCommandInvoked == TRUE) {
 				commandValid = FALSE;
 			}
 		}
@@ -147,6 +172,7 @@ int movePlayer(CharSpan *args, Player *player, int argCount) {
 				if (passabilityBlock[((int)player->self.position.xPos) + i][(int)player->self.position.yPos][(int)player->self.position.stage] == 1) {
 					log_(3, "[MOV] Block in player path detected!");
 					blocksInWay = TRUE;
+					player->self.position.xPos += i;
 					break;
 				}
 			}
@@ -171,6 +197,7 @@ int movePlayer(CharSpan *args, Player *player, int argCount) {
 				if (passabilityBlock[(int)player->self.position.xPos][((int)player->self.position.yPos) + i][(int)player->self.position.stage] == 1) {
 					log_(3, "[MOV] Block in player path detected!");
 					blocksInWay = TRUE;
+					player->self.position.yPos += i;
 					break;
 				}
 			}
@@ -193,19 +220,23 @@ int movePlayer(CharSpan *args, Player *player, int argCount) {
  * Entities: 1
  * */
 int generate(int type, Player *player) {
+	srand(time(NULL));
 	log_(3, "[GEN] Entering generation for specified type...");
 	switch(type) {
 		default:
 			log_(2, "[GEN] ERR: Generation behavior for type undefined!");
 			break;
 		case 0:
-			for(int i = 0; i < 12; i++) {
-				for(int j = 0; j < 12; j++) {
-					for(int k = 0; k < 12; k++) {
+			for(int i = 0; i <= 12; i++) {
+				for(int j = 0; j <= 12; j++) {
+					for(int k = 0; k <= 12; k++) {
 						passabilityBlock[i][j][k] = rand() % 2;
 						log_(3, "[GEN] Determined block for current position!");
 					}
 				}
+			}
+			for (int i = 0; i <= 12; i++) {
+				passabilityBlock[0][0][i] = 0;
 			}
 			break;
 		case 1:

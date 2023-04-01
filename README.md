@@ -10,6 +10,6 @@ C rewrite by all 3 of us.
 Now getting rewritten (this is the rewrite of https://github.com/moddingforreal/TextRPG in C)  
 
 ## Contact
-BreamkillerX's discord: bream#7258 (Original author)  
+BreamkillerX's discord: bream#7258 (Original Java version author)  
 moddingforreal's discord: moddingforreal#1131 (Developer/Maintainer)  
 Koenig-Heinrich-der-4te's discord: NiMo#6410 (Developer/Maintainer)  

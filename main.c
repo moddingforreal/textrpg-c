@@ -248,6 +248,7 @@ int movePlayer(CharSpan *args, Player *player, int argCount) {
 int generate(int type, Player *player) {
 	srand(time(NULL));
 	log_(3, "[GEN] Entering generation for specified type...");
+	int placedBlocks = 0;
 	switch(type) {
 		default:
 			log_(2, "[GEN] ERR: Generation behavior for type undefined!");
@@ -256,13 +257,15 @@ int generate(int type, Player *player) {
 			for(int i = 0; i <= 12; i++) {
 				for(int j = 0; j <= 12; j++) {
 					for(int k = 0; k <= 12; k++) {
-						if (randIntInRange(0, 5) == 5) {
+						if (randIntInRange(0, 6) == 6) {
 							passabilityBlock[i][j][k] = 1;
+							placedBlocks++;
 						}
 						log_(3, "[GEN] Determined block for current position!");
 					}
 				}
 			}
+			printf("World generation finished, %d blocks placed in your world!\n", placedBlocks);
 			for (int i = 0; i <= 12; i++) {
 				passabilityBlock[0][0][i] = 0;
 			}

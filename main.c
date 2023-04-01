@@ -104,26 +104,27 @@ int runGame() {
 			// To be implemented
 			if (compareSpan(arg0, "dev_help")) {
 				log_(3, "[DEV] DEV commands invoked!");
-				printf("map <stage> | shows a map of the specified stage\n");
+				printf("wmap <stage> | shows a map of the specified stage\n");
 				devCommandInvoked = TRUE;
-			} else if (compareSpan(arg0, "map")) {
+			} else if (compareSpan(arg0, "wmap")) {
 				if (&args[1] != NULL) {
 					int cmd_stage = spanToInt(args[1]);
 					printf("Map for stage %d\n", cmd_stage);
 					for (int j = 0; j <= 12; j++) {
 						for (int i = 0; i <= 12; i++) {
+							// If theres a block, a # gets printed, otherwise a _
 							if (passabilityBlock[i][j][cmd_stage] != 0) {
 								printf("#");
 							} else {
 								printf("_");
 							}
 							if (i == 12) {
-								printf("\n");
+								printf("\n"); // Every line of 13 blocks, a newline shall be printed
 							}
 						}
 					}
 				}
-				devCommandInvoked = TRUE;
+				devCommandInvoked = TRUE; // Mark that a dev command already got invoked
 			}
 		}
 		// Go into the normal commands
@@ -140,12 +141,12 @@ int runGame() {
 		} else if(compareSpan(arg0, "move")) {
 			log_(3, "[CMD] Command 'move' invoked!");
 			movePlayer(args, &player, argCount);
-		} else if (compareSpan(arg0, "linv")) {
+		} else if (compareSpan(arg0, "linv")) { // 'linv' is short for 'list inventory'
 			int invalid = 0; // Any IDs unassigned
 			int freeSlots = 0; // ID: 0
 			int gold = 0; // ID: 1
 			int stdPotion = 0; // ID: 2
-			for (int i = 0; i < 6; i++) {
+			for (int i = 0; i < 6; i++) { // Iterate over the entire inventory
 				for (int j = 0; j < 5; j++) {
 					int currSlotID = (int) player.self.inventory[i][j];
 					switch (currSlotID) {
@@ -166,7 +167,7 @@ int runGame() {
 			}
 			printf("Player Inventory: \nGold: %d \nStandard Potion: %d \n\nInvalid Items: %d \nEmpty Slots: %d \n", gold, stdPotion, invalid, freeSlots);
 		} else {
-			if (devCommandInvoked != TRUE) {
+			if (devCommandInvoked != TRUE) { // Only print a command invalidation error when there was no command at all, not even a dev command
 				commandValid = FALSE;
 			}
 		}
@@ -180,7 +181,7 @@ int runGame() {
 int movePlayer(CharSpan *args, Player *player, int argCount) {
 	if(argCount >= 3) {
 		int toMove = spanToInt(args[2]);
-		CharSpan axis = args[1];
+		CharSpan axis = args[1]; // Gets the axis to move on
 		if (compareSpan(&axis, "x")) {
 			log_(3, "[MOV] Moving on the x axis!");
 			// Check for out of bounds and adjust accordingly
@@ -254,7 +255,7 @@ int generate(int type, Player *player) {
 			log_(2, "[GEN] ERR: Generation behavior for type undefined!");
 			break;
 		case 0:
-			for(int i = 0; i <= 12; i++) {
+			for(int i = 0; i <= 12; i++) { // Generate for all 13 ** 3 blocks
 				for(int j = 0; j <= 12; j++) {
 					for(int k = 0; k <= 12; k++) {
 						if (randIntInRange(0, 6) == 6) {
@@ -381,14 +382,7 @@ int updatePlayerLevel(Player *player) {
 }
 
 // Auxiliary functions
-int isInRangeInt(int value, int lowerBound, int upperBound) {
-	if (value < upperBound && value > lowerBound) {
-		return 0;
-	} else {
-		return 1;
-	}
-}
-double distance2D(Coordinates position1, Coordinates position2) {
+double distance2D(Coordinates position1, Coordinates position2) { // Uses pythagorean theorem to calculate the distance
 	return abs(sqrt(square(position2.xPos - position1.xPos) +
 					square(position2.yPos - position1.yPos)));
 }

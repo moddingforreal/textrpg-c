@@ -19,7 +19,7 @@ typedef struct Entity
 	double attack;
 	double level;
 	double xp;
-	double inventory[4][5];
+	double inventory[6][5];
 } Entity;
 typedef struct Player
 {
@@ -77,3 +77,5 @@ int initLog(int logLvl);
 int stopLog();
 int generate(int type, Player *player);
 int movePlayer(CharSpan *args, Player *player, int argCount);
+int randIntInRange(int min, int max);
+int updatePlayerLevel(Player *player);

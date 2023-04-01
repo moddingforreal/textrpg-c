@@ -74,6 +74,7 @@ int runGame() {
 	while (exit != 1) {
 		log_(3, "Loop iteration started!");
 		loopIteration++;
+		updatePlayerLevel(&player);
 		if (commandValid != TRUE) {
 			printf("Invalid command!\n"); // Notify player when the previous command was invalid
 			commandValid = TRUE;
@@ -108,7 +109,7 @@ int runGame() {
 			} else if (compareSpan(arg0, "map")) {
 				if (&args[1] != NULL) {
 					int cmd_stage = spanToInt(args[1]);
-					printf("Map for stage %d\n", &cmd_stage);
+					printf("Map for stage %d\n", cmd_stage);
 					for (int j = 0; j <= 12; j++) {
 						for (int i = 0; i <= 12; i++) {
 							if (passabilityBlock[i][j][cmd_stage] != 0) {
@@ -135,12 +136,37 @@ int runGame() {
 			printf("help                          | shows this list \n");
 			printf("exit                          | exits the game  \n");
 			printf("move <direction:x|y> <amount> | moves the player\n");
+			printf("linv                          | list player inventory contents\n");
 		} else if(compareSpan(arg0, "move")) {
 			log_(3, "[CMD] Command 'move' invoked!");
 			movePlayer(args, &player, argCount);
-		}
-		else {
-			if (devCommandInvoked == TRUE) {
+		} else if (compareSpan(arg0, "linv")) {
+			int invalid = 0; // Any IDs unassigned
+			int freeSlots = 0; // ID: 0
+			int gold = 0; // ID: 1
+			int stdPotion = 0; // ID: 2
+			for (int i = 0; i < 6; i++) {
+				for (int j = 0; j < 5; j++) {
+					int currSlotID = (int) player.self.inventory[i][j];
+					switch (currSlotID) {
+						default:
+							invalid++;
+							break;
+						case 0:
+							freeSlots++;
+							break;
+						case 1:
+							gold++;
+							break;
+						case 2:
+							stdPotion++;
+							break;
+					}
+				}
+			}
+			printf("Player Inventory: \nGold: %d \nStandard Potion: %d \n\nInvalid Items: %d \nEmpty Slots: %d \n", gold, stdPotion, invalid, freeSlots);
+		} else {
+			if (devCommandInvoked != TRUE) {
 				commandValid = FALSE;
 			}
 		}
@@ -230,7 +256,9 @@ int generate(int type, Player *player) {
 			for(int i = 0; i <= 12; i++) {
 				for(int j = 0; j <= 12; j++) {
 					for(int k = 0; k <= 12; k++) {
-						passabilityBlock[i][j][k] = rand() % 2;
+						if (randIntInRange(0, 5) == 5) {
+							passabilityBlock[i][j][k] = 1;
+						}
 						log_(3, "[GEN] Determined block for current position!");
 					}
 				}
@@ -328,7 +356,7 @@ int playerInit(Player *player) {
 
 	// Item IDs, 0 for nothing. Each slot can only keep 1 item
 	// Initialized to only 0s => empty inventory
-	for(int i = 0; i < 4; i++) {
+	for(int i = 0; i < 6; i++) {
 		for(int j = 0; j < 5; j++) {
 			playerEntity.inventory[i][j] = 0;
 		}
@@ -336,6 +364,16 @@ int playerInit(Player *player) {
 
 	// Assign playerEntity to player
 	player->self = playerEntity;
+	return 0;
+}
+
+// Update world
+int updatePlayerLevel(Player *player) {
+	if (player->self.xp >= 100) {
+		double overflow = ((int) player->self.xp) % 100;
+		player->self.level += (player->self.xp - overflow) / 100;
+		player->self.xp = 0 + overflow;
+	}
 	return 0;
 }
 
@@ -363,4 +401,8 @@ char *getCharSeq(char input[], int begin, int end) {
 	char* ret = malloc(range * sizeof(char));
 	strncpy(ret, input + begin, range);
 	return ret;
+}
+
+int randIntInRange(int min, int max) {
+	return (rand() % (max - min + 1)) + min;
 }

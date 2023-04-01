@@ -67,11 +67,11 @@ int runGame() {
 	playerInit(&player);
 	log_(3, "Starting terrain generation (type 0)...");
 	generate(0, &player);
-	int exit = 0;
+	int exit = FALSE;
 	int commandValid = TRUE;
 	int loopIteration = 0;
 	log_(3, "Entering command loop!");
-	while (exit != 1) {
+	while (!exit) {
 		log_(3, "Loop iteration started!");
 		loopIteration++;
 		updatePlayerLevel(&player);
@@ -110,18 +110,16 @@ int runGame() {
 				if (&args[1] != NULL) {
 					int cmd_stage = spanToInt(args[1]);
 					printf("Map for stage %d\n", cmd_stage);
-					for (int j = 0; j <= 12; j++) {
-						for (int i = 0; i <= 12; i++) {
+					for (int j = 0; j < 12; j++) {
+						for (int i = 0; i < 12; i++) {
 							// If theres a block, a # gets printed, otherwise a _
 							if (passabilityBlock[i][j][cmd_stage] != 0) {
 								printf("#");
 							} else {
 								printf("_");
 							}
-							if (i == 12) {
-								printf("\n"); // Every line of 13 blocks, a newline shall be printed
-							}
 						}
+						printf("\n"); // Every line of 12 blocks, a newline shall be printed
 					}
 				}
 				devCommandInvoked = TRUE; // Mark that a dev command already got invoked
@@ -130,7 +128,7 @@ int runGame() {
 		// Go into the normal commands
 		if (compareSpan(arg0, "exit")) {
 			log_(3, "[CMD] Command 'exit' invoked! Breaking out of command loop!");
-			exit = 1;
+			exit = TRUE;
 		} else if (compareSpan(arg0, "help")) {
 			log_(3, "Command 'help' invoked!");
 			printf("==         LIST OF AVAILABLE COMMANDS         ==\n");
@@ -167,7 +165,7 @@ int runGame() {
 			}
 			printf("Player Inventory: \nGold: %d \nStandard Potion: %d \n\nInvalid Items: %d \nEmpty Slots: %d \n", gold, stdPotion, invalid, freeSlots);
 		} else {
-			if (devCommandInvoked != TRUE) { // Only print a command invalidation error when there was no command at all, not even a dev command
+			if (!devCommandInvoked) { // Only print a command invalidation error when there was no command at all, not even a dev command
 				commandValid = FALSE;
 			}
 		}
@@ -185,52 +183,50 @@ int movePlayer(CharSpan *args, Player *player, int argCount) {
 		if (compareSpan(&axis, "x")) {
 			log_(3, "[MOV] Moving on the x axis!");
 			// Check for out of bounds and adjust accordingly
-			if (player->self.position.xPos + toMove > 12) {
-				toMove = 12 - player->self.position.xPos;
-				log_(2, "[MOV] Player attempted to move out of bounds! (x > 12)");
+			if (player->self.position.xPos + toMove >= 12) {
+				toMove = 11 - player->self.position.xPos;
+				log_(2, "[MOV] Player attempted to move out of bounds! (x >= 12)");
 			} else if (player->self.position.xPos + toMove < 0) {
 				toMove = -player->self.position.xPos;
 				log_(2, "[MOV] Player attempted to move out of bounds! (x < 0)");
 			}
 
 			// Check for blocks in the way
-			int blocksInWay = FALSE;
-			for (int i = 0; i < toMove; i++) {
-				if (passabilityBlock[((int)player->self.position.xPos) + i][(int)player->self.position.yPos][(int)player->self.position.stage] == 1) {
+			int direction = toMove / abs(toMove);
+			for (int i = 0; i != toMove; i += direction) {
+				// check if there is an obstacle infront of the player
+				if (passabilityBlock[((int)player->self.position.xPos) + direction][(int)player->self.position.yPos][(int)player->self.position.stage] == 1) {
 					log_(3, "[MOV] Block in player path detected!");
-					blocksInWay = TRUE;
-					player->self.position.xPos += i;
 					break;
+				} else {
+					player->self.position.xPos += direction; // move by one unit
 				}
 			}
-			if (!blocksInWay) {
-				player->self.position.xPos += toMove;
-			}
+
 			log_(3, "[MOV] Moved on the x axis!");
 		} else if (compareSpan(&axis, "y")) {
 			log_(3, "[MOV] Moving on the y axis!");
 			// Check for out of bounds and adjust accordingly
-			if (player->self.position.yPos + toMove > 12) {
-				toMove = 12 - player->self.position.yPos;
-				log_(2, "[MOV] Player attempted to move out of bounds! (y > 12)");
+			if (player->self.position.yPos + toMove >= 12) {
+				toMove = 11 - player->self.position.yPos;
+				log_(2, "[MOV] Player attempted to move out of bounds! (y >= 12)");
 			} else if (player->self.position.yPos + toMove < 0) {
 				toMove = -player->self.position.yPos;
 				log_(2, "[MOV] Player attempted to move out of bounds! (y < 0)");
 			}
 
 			// Check for blocks in the way
-			int blocksInWay = FALSE;
-			for (int i = 0; i < toMove; i++) {
-				if (passabilityBlock[(int)player->self.position.xPos][((int)player->self.position.yPos) + i][(int)player->self.position.stage] == 1) {
+			int direction = toMove / abs(toMove);
+			for (int i = 0; i != toMove; i += direction) {
+				// check if there is an obstacle infront of the player
+				if (passabilityBlock[(int)player->self.position.xPos][((int)player->self.position.yPos) + direction][(int)player->self.position.stage] == 1) {
 					log_(3, "[MOV] Block in player path detected!");
-					blocksInWay = TRUE;
-					player->self.position.yPos += i;
 					break;
+				} else {
+					player->self.position.yPos += direction; // move by one unit
 				}
 			}
-			if (!blocksInWay) {
-				player->self.position.yPos += toMove;
-			}
+			
 			log_(3, "[MOV] Moved on the y axis!");
 		} else {
 			printf("Invalid direction\n");
@@ -255,10 +251,10 @@ int generate(int type, Player *player) {
 			log_(2, "[GEN] ERR: Generation behavior for type undefined!");
 			break;
 		case 0:
-			for(int i = 0; i <= 12; i++) { // Generate for all 13 ** 3 blocks
-				for(int j = 0; j <= 12; j++) {
-					for(int k = 0; k <= 12; k++) {
-						if (randIntInRange(0, 6) == 6) {
+			for(int i = 0; i < 12; i++) { // Generate for all 13 ** 3 blocks
+				for(int j = 0; j < 12; j++) {
+					for(int k = 0; k < 12; k++) {
+						if (randIntInRange(0, 6) == 0) {
 							passabilityBlock[i][j][k] = 1;
 							placedBlocks++;
 						}
@@ -267,7 +263,7 @@ int generate(int type, Player *player) {
 				}
 			}
 			printf("World generation finished, %d blocks placed in your world!\n", placedBlocks);
-			for (int i = 0; i <= 12; i++) {
+			for (int i = 0; i < 12; i++) {
 				passabilityBlock[0][0][i] = 0;
 			}
 			break;
@@ -383,8 +379,8 @@ int updatePlayerLevel(Player *player) {
 
 // Auxiliary functions
 double distance2D(Coordinates position1, Coordinates position2) { // Uses pythagorean theorem to calculate the distance
-	return abs(sqrt(square(position2.xPos - position1.xPos) +
-					square(position2.yPos - position1.yPos)));
+	return sqrt(square(position2.xPos - position1.xPos) +
+					square(position2.yPos - position1.yPos));
 }
 double square(double x) { return x * x; }
 void clearScreen() {
@@ -395,7 +391,7 @@ void clearScreen() {
 }
 char *getCharSeq(char input[], int begin, int end) {
 	int range = end - begin; // Get size of ret
-	char* ret = malloc(range * sizeof(char));
+	char* ret = calloc(range, sizeof(char));
 	strncpy(ret, input + begin, range);
 	return ret;
 }

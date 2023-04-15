@@ -231,6 +231,10 @@ int runGame() {
 int movePlayer(CharSpan *args, Player *player, int argCount) {
 	if(argCount >= 3) {
 		int toMove = spanToInt(args[2]);
+		if (toMove == 0) {
+			log_(3, "[MOV] Distance argument 0: exiting move...");
+			return 0;
+		}
 		CharSpan axis = args[1]; // Gets the axis to move on
 		if (compareSpan(&axis, "x")) {
 			log_(3, "[MOV] Moving on the x axis!");

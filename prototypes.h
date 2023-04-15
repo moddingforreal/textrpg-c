@@ -83,3 +83,4 @@ int updatePlayerLevel(Player *player);
 int updatePlayerBlockKnowledgeTable(Player *player);
 int checkPlayerOnTransportSpace(Player *player);
 int endGame(Player *player);
+int invtools(CharSpan* args);

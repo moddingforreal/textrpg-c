@@ -61,7 +61,8 @@ int parseArgs(int argc, char *argv[]) {
 }
 
 int runGame() {
-	printf("Welcome to TextRPG!\nType \"help\" to view a list of available commands\nType \"exit\" to exit the game\n\n");
+	printf("Welcome to TextRPG (C Edition)!\nType \"help\" to view a list of available commands\nType \"exit\" to exit the game\n");
+	printf("TextRPG (C edition) can be found at: https://github.com/moddingforreal/textrpg-c\n\n");
 	log_(3, "Creating player");
 	Player player;
 	log_(3, "Initializing player...");
@@ -84,6 +85,15 @@ int runGame() {
 		if (commandValid != TRUE) {
 			printf("Invalid command!\n"); // Notify player when the previous command was invalid
 			commandValid = TRUE;
+		}
+		if (devmode == 1) {
+			printf("Devmode enabled.\n");
+		}
+		if (godmode == 1) {
+			printf("Godmode enabled.\n");
+		}
+		if (logging_level > 0) {
+			printf("Logging level set to %d.", logging_level);
 		}
 		printf("Coordinates: %d, %d @ stage %d\n", 
 				(int) player.self.position.xPos, 
@@ -114,6 +124,7 @@ int runGame() {
 				printf("wmap <stage>                        | shows a map of the specified stage\n");
 				printf("tele <x> <y> <stage>                | teleports the player to the specified coordinates\n");
 				printf("setblock <x> <y> <stage> <block_id> | sets block at given coords to given block id\n");
+				printf("invtools <verb> [args]              | tools for inventory management (try \"invtools help\")");
 				devCommandInvoked = TRUE;
 			} else if (compareSpan(arg0, "wmap")) {
 				if (&args[1] != NULL) {
@@ -162,6 +173,9 @@ int runGame() {
 				}
 				passabilityBlock[args_val[0]][args_val[1]][args_val[2]] = args_val[3];
 				devCommandInvoked = TRUE;
+			} else if (compareSpan(arg0, "invtools")) {
+				invtools(args);
+				devCommandInvoked = TRUE;
 			}
 		}
 		// Go into the normal commands
@@ -176,6 +190,7 @@ int runGame() {
 			printf("move <direction:x|y> <amount> | moves the player\n");
 			printf("linv                          | list player inventory contents\n");
 			printf("map <stage>                   | show map of player-known blocks for stage\n");
+			printf("credits                       | show game credits\n");
 		} else if(compareSpan(arg0, "move")) {
 			log_(3, "[CMD] Command 'move' invoked!");
 			movePlayer(args, &player, argCount);
@@ -239,7 +254,27 @@ int runGame() {
 				log_(3, "[CMD] Invalid stage selected for command \"map\"");
 				printf("Invalid map stage!\n");
 			}
-		}else {
+		} else if (compareSpan(arg0, "credits")) {
+			printf("CREDITS FOR TEXTRPG:\n\n");
+			printf("ORIGINAL (JAVA EDITION):\n");
+			printf("Original author: BreamkillerX\n");
+			printf("Rewritten by: moddingforreal\n");
+			printf("Rewritten (2nd time) by: NiMo, moddingforreal\n");
+			printf("TextRPG (Java edition) can be found at:\nhttps://github.com/moddingforreal/TextRPG\n\n");
+			printf("NEW VERSION (C EDITION):\t(<- You are playing this version)\n");
+			printf("Lead development/maintainer: moddingforreal\n");
+			printf("Lead development/maintainer: NiMo\n");
+			printf("Contributor: BreamkillerX\n");
+			printf("textrpg-c (TextRPG C Edition) can be found at:\nhttps://github.com/moddingforreal/textrpg-c\n\n");
+			printf("CONTACT:\n");
+			printf("moddingforreal:\n");
+			printf("Discord: moddingforreal#1131\nGitHub: https://github.com/moddingforreal\n");
+			printf("NiMo:\n");
+			printf("Discord: NiMo#6410\nGitHub: https://github.com/Koenig-Heinrich-der-4te\n");
+			printf("BreamkillerX:\n");
+			printf("Discord: bream#7258\nGitHub: https://github.com/BreamkillerX\n\n\n\n");
+			printf("\t\t\t\tTHANKS FOR PLAYING THIS GAME! <3\n\n\n\n");
+		} else {
 			if (!devCommandInvoked) { // Only print a command invalidation error when there was no command at all, not even a dev command
 				commandValid = FALSE;
 			}
@@ -247,6 +282,21 @@ int runGame() {
 	}
 	printf("Game ended!\n");
 
+	return 0;
+}
+
+int invtools(CharSpan* args) {
+	if (compareSpan(&args[1], "help")) {
+		printf("Invtools help page:\n\n");
+		printf("Description:\n");
+		printf("Invtools is the tool to modify player inventories, \nmade by the devs for textrpg-c.\n\n");
+		printf("Verbs:\n");
+		printf("help                     | shows this menu\n");
+		// The verbs below will be implemented soon
+		/* printf("list <? | \"help\">        | lists ? with IDs (or shows a help menu)\n");
+		printf("pgive <item_id> [amount] | gives amount items of type item_id to the player\n");
+		printf("psetinv <slot> <item_id> | sets player inventory slot to specific item_id"); */
+	}
 	return 0;
 }
 

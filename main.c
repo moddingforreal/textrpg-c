@@ -466,14 +466,20 @@ int playerInit(Player *player) {
 // Update world
 int updatePlayerLevel(Player *player) {
 	if (player->self.xp >= 100) {
-		double overflow = ((int) player->self.xp) % 100;
-		player->self.level += (player->self.xp - overflow) / 100;
-		player->self.xp = 0 + overflow;
+		double overflow = ((int) player->self.xp) % 100; // Gets the amount left of xp if 1 level = 100 xp
+		player->self.level += (player->self.xp - overflow) / 100; // Adds the levels
+		player->self.xp = 0 + overflow; // Adds the amount of leftover xp back
 	}
 	return 0;
 }
 
 int updatePlayerBlockKnowledgeTable(Player *player) {
+	/* Explanation:
+	 * the function is iterating over a grid like this:
+	 * ### where the X is where the player is standing.
+	 * #X# when the block is out-of-bounds, it skips.
+	 * ### Othwerwise, the block is added to known.
+	 * */
 	log_(3, "[WU] Updating player block knowledge table...");
 	log_(3, "[WU] Checking for blocks in player sight...");
 	for (int i = 0; i < 3; i++) {
@@ -516,7 +522,9 @@ int checkPlayerOnTransportSpace(Player* player) {
 
 // Event
 int endGame(Player* player) {
-	printf("\n\n\n\t\t\tGame ended, thanks for playing textrpg-c!\n\n\n\n");
+	// This is definetly not going to be the final end sequence,
+	// just a placeholder to indicate that the end sequence has been triggered
+	printf("\n\n\n\t\t\tGame ended, thanks for playing textrpg C edition!\n\n\n\n");
 	return 0;
 }
 
@@ -540,5 +548,6 @@ char *getCharSeq(char input[], int begin, int end) {
 }
 
 int randIntInRange(int min, int max) {
+	log_(3, "[AUX] Random number generated!");
 	return (rand() % (max - min + 1)) + min;
 }

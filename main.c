@@ -97,8 +97,8 @@ int runGame() {
 		char input[255];
 		getInput(input, 255, "> ");
 		clearScreen(); // Clear screen after input has been submitted
-		CharSpan args[3];
-		int argCount = split(args, 3, input, " ");
+		CharSpan args[5];
+		int argCount = split(args, 5, input, " ");
 		CharSpan *arg0 = &args[0];
 		int devCommandInvoked = FALSE;
 		// Switch statements for strings don't exist
@@ -140,6 +140,18 @@ int runGame() {
 					}
 				}
 				devCommandInvoked = TRUE; // Mark that a dev command already got invoked
+			} else if (compareSpan(arg0, "tele")) {
+				char coords_args[3][20];
+				extractContent(coords_args[0], &args[1]);
+				extractContent(coords_args[1], &args[2]);
+				extractContent(coords_args[2], &args[3]);
+				double tg_x = strtod(coords_args[0], NULL);
+				double tg_y = strtod(coords_args[1], NULL);
+				double tg_stage = strtod(coords_args[2], NULL);
+				player.self.position.xPos = tg_x;
+				player.self.position.yPos = tg_y;
+				player.self.position.stage = tg_stage;
+				printf("Set new location to %lf | %lf | %lf !\n", tg_x, tg_y, tg_stage);
 			}
 		}
 		// Go into the normal commands

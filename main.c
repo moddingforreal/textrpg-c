@@ -110,7 +110,10 @@ int runGame() {
 			// To be implemented
 			if (compareSpan(arg0, "dev_help")) {
 				log_(3, "[DEV] DEV commands invoked!");
-				printf("wmap <stage> | shows a map of the specified stage\n");
+				printf("==                          LIST OF AVAILABLE DEV COMMANDS                           ==\n");
+				printf("wmap <stage>                        | shows a map of the specified stage\n");
+				printf("tele <x> <y> <stage>                | teleports the player to the specified coordinates\n");
+				printf("setblock <x> <y> <stage> <block_id> | sets block at given coords to given block id\n");
 				devCommandInvoked = TRUE;
 			} else if (compareSpan(arg0, "wmap")) {
 				if (&args[1] != NULL) {
@@ -152,6 +155,13 @@ int runGame() {
 				player.self.position.yPos = tg_y;
 				player.self.position.stage = tg_stage;
 				printf("Set new location to %lf | %lf | %lf !\n", tg_x, tg_y, tg_stage);
+			} else if (compareSpan(arg0, "setblock")) {
+				int args_val[4];
+				for (int i = 0; i < 4; i++) {
+					args_val[i] = spanToInt(args[i + 1]);
+				}
+				passabilityBlock[args_val[0]][args_val[1]][args_val[2]] = args_val[3];
+				devCommandInvoked = TRUE;
 			}
 		}
 		// Go into the normal commands
@@ -165,7 +175,7 @@ int runGame() {
 			printf("exit                          | exits the game  \n");
 			printf("move <direction:x|y> <amount> | moves the player\n");
 			printf("linv                          | list player inventory contents\n");
-			printf("map <stage>                   | show map of player-known blocks for stage");
+			printf("map <stage>                   | show map of player-known blocks for stage\n");
 		} else if(compareSpan(arg0, "move")) {
 			log_(3, "[CMD] Command 'move' invoked!");
 			movePlayer(args, &player, argCount);

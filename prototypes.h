@@ -24,6 +24,7 @@ typedef struct Entity
 typedef struct Player
 {
 	Entity self;
+	int knownBlocks[12][12][12];
 } Player;
 
 typedef struct Statistics
@@ -79,3 +80,4 @@ int generate(int type, Player *player);
 int movePlayer(CharSpan *args, Player *player, int argCount);
 int randIntInRange(int min, int max);
 int updatePlayerLevel(Player *player);
+int updatePlayerBlockKnowledgeTable(Player *player);

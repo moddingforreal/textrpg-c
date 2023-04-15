@@ -67,10 +67,13 @@ int runGame() {
 	log_(3, "Initializing player...");
 	playerInit(&player);
 	log_(3, "Starting terrain generation (type 0)...");
-	generate(0, &player);
+	generate(0, &player); // Generate terrain
+	generate(1, &player); // Populate terrain
+	// Flags
 	int exit = FALSE;
 	int commandValid = TRUE;
 	int loopIteration = 0;
+	int bJustTransported = FALSE;
 	log_(3, "Entering command loop!");
 	while (!exit) {
 		log_(3, "Loop iteration started!");
@@ -285,13 +288,15 @@ int movePlayer(CharSpan *args, Player *player, int argCount) {
 	} else {
 		printf("Not enough args for 'move' provided: move <direction> <amount>\n");
 	}
+	checkPlayerOnTransportSpace(player);
 	return 0;
 }
 
 /* Generation function, generates the world initially
  * Types:
  * Terrain: 0
- * Entities: 1
+ * Populate terrain: 1
+ * Entities: 2
  * */
 int generate(int type, Player *player) {
 	srand(time(NULL));
@@ -321,6 +326,35 @@ int generate(int type, Player *player) {
 			}
 			break;
 		case 1:
+			log_(3, "[GEN-POP] Entering terrain population...");
+			log_(3, "[GEN-POP] Populating entrances / exits for stages 0 - 10...");
+			for (int stage = 0; stage < 11; stage++) {
+				// Generate the block coordinates
+				int x = 0;
+				int y = 0;
+				// Make sure that the exit/entrance is not on 0,0
+				while (x == 0 && y == 0){
+					x = randIntInRange(0, 11);
+					y = randIntInRange(0, 11);
+				}
+				// Set exit & entrances
+				passabilityBlock[x][y][stage] = 2;
+				passabilityBlock[x][y][stage + 1] = 3;
+			}
+			// Set exit for stage 11 (12th stage || last stage)
+			log_(3, "[GEN-POP] Populating exit for stage 11 (EOG)..."); // EOG = End of Game
+			int x = 0;
+			int y = 0;
+			// Again make sure that the exit is not on 0,0
+			while (x == 0 && y == 0) {
+				x = randIntInRange(0, 11);
+				y = randIntInRange(0, 11);
+			}
+			// Set game exit
+			passabilityBlock[x][y][11] = 2;
+			log_(3, "[GEN-POP] Finished populating terrain!");
+			break;
+		case 2:
 			// To be implemented
 			break;
 	}
@@ -441,7 +475,7 @@ int updatePlayerLevel(Player *player) {
 
 int updatePlayerBlockKnowledgeTable(Player *player) {
 	log_(3, "[WU] Updating player block knowledge table...");
-	log_(3, "[WU] Checking for blocks in player sight");
+	log_(3, "[WU] Checking for blocks in player sight...");
 	for (int i = 0; i < 3; i++) {
 		log_(3, "[WU] Next row: ");
 		for (int j = 0; j < 3; j++) {
@@ -458,6 +492,31 @@ int updatePlayerBlockKnowledgeTable(Player *player) {
 		}
 	}
 
+	return 0;
+}
+
+int checkPlayerOnTransportSpace(Player* player) {
+	if (passabilityBlock[(int) player->self.position.xPos][(int) player->self.position.yPos][(int) player->self.position.stage] == 2) { // Check for exit
+		log_(3, "[WUP-CTS] Player on exit, moving...");
+		if (player->self.position.stage != 11) {
+			player->self.position.stage++;
+		} else if (player->self.position.stage == 11) { // End game if player manages through all levels
+			endGame(player);
+		} else {
+			log_(3, "[WUP-CTS] Player on stage out-of-bounds! \nNo transport space behaviour defined!");
+		}
+	} else if (passabilityBlock[(int) player->self.position.xPos][(int) player->self.position.yPos][(int) player->self.position.stage] == 3) { // Check for entrance
+		log_(3, "[WUP-CTS] Player on entrance, moving...");
+		player->self.position.stage--;
+	} else {
+		log_(3, "[WUP-CTS] Player not on transport space");
+	}
+	return 0;
+}
+
+// Event
+int endGame(Player* player) {
+	printf("\n\n\n\t\t\tGame ended, thanks for playing textrpg-c!\n\n\n\n");
 	return 0;
 }
 

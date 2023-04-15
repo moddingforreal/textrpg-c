@@ -81,3 +81,5 @@ int movePlayer(CharSpan *args, Player *player, int argCount);
 int randIntInRange(int min, int max);
 int updatePlayerLevel(Player *player);
 int updatePlayerBlockKnowledgeTable(Player *player);
+int checkPlayerOnTransportSpace(Player *player);
+int endGame(Player *player);

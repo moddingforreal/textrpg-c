@@ -115,11 +115,22 @@ int runGame() {
 					printf("Map for stage %d\n", cmd_stage);
 					for (int j = 0; j < 12; j++) {
 						for (int i = 0; i < 12; i++) {
-							// If theres a block, a # gets printed, otherwise a _
-							if (passabilityBlock[i][j][cmd_stage] != 0) {
-								printf("#");
-							} else {
-								printf("_");
+							switch (passabilityBlock[i][j][cmd_stage]) {
+								default:
+									log_(1, "[CMD] Block id invalid!");
+									break;
+								case 0:
+									printf("_");	// Empty space
+									break;
+								case 1:
+									printf("#");	// Generic Block
+									break;
+								case 2:
+									printf("X");	// Exit (to next stage)
+									break;
+								case 3:
+									printf("O");	// Entrance (to this stage)
+									break;
 							}
 						}
 						printf("\n"); // Every line of 12 blocks, a newline shall be printed
@@ -177,13 +188,19 @@ int runGame() {
 						if (player.knownBlocks[i][j][cmd_stage] == TRUE) {
 							switch(passabilityBlock[j][i][cmd_stage]) {
 								default:
-									printf("!");
+									printf("!");	// Block invalid
 									break;
 								case 0:
-									printf("_");
+									printf("_");	// Generic free space
 									break;
 								case 1:
-									printf("#");
+									printf("#");	// Generic block
+									break;
+								case 2:
+									printf("X");	// Exit (to next stage)
+									break;
+								case 3:
+									printf("O");	// Entrance (from previous level)
 									break;
 							}
 						} else {

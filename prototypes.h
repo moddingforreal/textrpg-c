@@ -83,4 +83,5 @@ int updatePlayerLevel(Player *player);
 int updatePlayerBlockKnowledgeTable(Player *player);
 int checkPlayerOnTransportSpace(Player *player);
 int endGame(Player *player);
-int invtools(CharSpan* args);
+int invtools(CharSpan* args, Player* player, int argCount);
+int getFreeSlotsCount(Player* player);

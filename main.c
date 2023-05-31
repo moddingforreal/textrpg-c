@@ -127,7 +127,7 @@ int runGame() {
 				printf("invtools <verb> [args]              | tools for inventory management (try \"invtools help\")");
 				devCommandInvoked = TRUE;
 			} else if (compareSpan(arg0, "wmap")) {
-				if (&args[1] != NULL) {
+				if (argCount >= 2) {
 					int cmd_stage = spanToInt(args[1]);
 					printf("Map for stage %d\n", cmd_stage);
 					for (int j = 0; j < 12; j++) {
@@ -174,7 +174,7 @@ int runGame() {
 				passabilityBlock[args_val[0]][args_val[1]][args_val[2]] = args_val[3];
 				devCommandInvoked = TRUE;
 			} else if (compareSpan(arg0, "invtools")) {
-				invtools(args);
+				invtools(args, &player, argCount);
 				devCommandInvoked = TRUE;
 			}
 		}
@@ -220,7 +220,7 @@ int runGame() {
 			}
 			printf("Player Inventory: \nGold: %d \nStandard Potion: %d \n\nInvalid Items: %d \nEmpty Slots: %d \n", gold, stdPotion, invalid, freeSlots);
 		} else if (compareSpan(arg0, "map")) {
-			if (&args[1] != NULL && spanToInt(args[1]) < 12 && spanToInt(args[1]) > -1) {
+			if (argCount >= 2 && spanToInt(args[1]) < 12 && spanToInt(args[1]) > -1) {
 				int cmd_stage = spanToInt(args[1]);
 				printf("Map for stage %d\n", cmd_stage);
 				for (int i = 0; i < 12; i++) {
@@ -285,19 +285,125 @@ int runGame() {
 	return 0;
 }
 
-int invtools(CharSpan* args) {
+int invtools(CharSpan* args, Player* player, int argCount) {
 	if (compareSpan(&args[1], "help")) {
 		printf("Invtools help page:\n\n");
 		printf("Description:\n");
 		printf("Invtools is the tool to modify player inventories, \nmade by the devs for textrpg-c.\n\n");
 		printf("Verbs:\n");
 		printf("help                     | shows this menu\n");
-		// The verbs below will be implemented soon
-		/* printf("list <? | \"help\">        | lists ? with IDs (or shows a help menu)\n");
+		printf("list <? | \"help\">        | lists ? with IDs (or shows a help menu)\n");
+		printf("getname <item_id>        | gets the name for the specified item ID\n");
+		printf("getid   <internal name>  | gets the item ID by the specified internal name\n");
+		printf("getfreeslots             | gets the number of free slots in the player inventory\n");
 		printf("pgive <item_id> [amount] | gives amount items of type item_id to the player\n");
-		printf("psetinv <slot> <item_id> | sets player inventory slot to specific item_id"); */
+		printf("psetinv <slot> <item_id> | sets player inventory slot to specific item_id");
+	} else if (compareSpan(&args[1], "list")) {
+		if (compareSpan(&args[2], "help")) {
+			printf("Invtools manual : list <? | \"help\">\n");
+			printf("Lists ? with IDs | \"help\" shows this help menu\n\n");
+			printf("Valid arguments for ?:\n");
+			printf("pinv                    | lists player inventory with IDs\n");
+			printf("idvals                  | lists values of item IDs\n");
+		} else if (compareSpan(&args[2], "pinv")) {
+			for (int i = 0; i < 5; i++) {
+				printf("Row %d: ", i);
+				for (int j = 0; j < 6; j++) {
+					int currSlotID = (int) player->self.inventory[j][i];
+					printf("%d; ", currSlotID);
+				}
+				printf("\n");
+			} 
+		} else if (compareSpan(&args[2], "idvals")) {
+			printf("Item IDs | IGN | internal name:\n\n");
+			printf("0 | Empty space (none) | freeSlot\n");
+			printf("1 | Gold               | gold\n");
+			printf("2 | Standard Potion    | stdPotion\n");
+		}
+	} else if (compareSpan(&args[1], "getname")) {
+		int item_id = spanToInt(args[2]);
+		printf("Given ItemID %d:\n", item_id);
+		switch (item_id) {
+			default:
+				printf("Invalid item ID.\n");
+				break;
+			case 0:
+				printf("Name: Empty space (none)\nInternal name: freeSlot\n");
+				break;
+			case 1:
+				printf("Name: Gold\nInternal name: gold\n");
+				break;
+			case 2:
+				printf("Name: Standard Potion\nInternal name: stdPotion\n");
+				break;
+		}
+	} else if (compareSpan(&args[1], "getid")) {
+		CharSpan* pIntName = &args[2];
+		char intNameGiven[255];
+		extractContent(intNameGiven, pIntName);
+		printf("Given internalized name: \"%s\"\n", &intNameGiven);
+		if (compareSpan(pIntName, "freeSlot")) {
+			printf("Name: Empty space (none)\nItem ID: 0\n");
+		} else if (compareSpan(pIntName, "gold")) {
+			printf("Name: Gold\nItem ID: 2\n");
+		} else if (compareSpan(pIntName, "stdPotion")) {
+			printf("Name: Standard Potion\nItem ID: 2\n");
+		} else {
+			printf("No item ID known for given internalized name.\n");
+		}
+	} else if (compareSpan(&args[1], "getfreeslots")) {
+		int freeSlots = getFreeSlotsCount(player);
+		printf("Number of free slots: %d\n", freeSlots);
+	} else if (compareSpan(&args[1], "pgive")) {
+		for (int once = 0; once < 1; once++) {
+			if (argCount < 3) { 
+				printf("Not enough arguments.\n");
+				break;
+			}
+			int freeSlots = getFreeSlotsCount(player);
+			int item_id = spanToInt(args[2]);
+			int amount = 1;
+			if (argCount >= 4) {
+				amount = spanToInt(args[3]);
+			}
+			if (amount > 30) {
+				printf("Amount too high\n");
+				break;
+			}
+			for (int i = 0; i < 6; i++) {
+				for (int j = 0; j < 5; j++) {
+					if (amount <= 0) {
+						break;
+					} else if (player->self.inventory[i][j] == 0) {
+						player->self.inventory[i][j] = item_id;
+						amount--;
+					}
+				}
+			}
+		}
+	} else if (compareSpan(&args[1], "psetinv")) {
+		int slot = spanToInt(args[2]);
+		int item_id = spanToInt(args[3]);
+		int collumn = slot % 6;
+		int row = collumn / 5;
+		player->self.inventory[collumn][row] = item_id;
+		printf("Slot Item ID set!\n");
+
+	} else {
+		printf("Invalid command.\n");
 	}
+
 	return 0;
+}
+
+int getFreeSlotsCount(Player* player) {
+	int freeSlotsC = 0;
+	for (int i = 0; i < 6; i++) {
+		for (int j = 0; j < 5; j++) {
+			if (player->self.inventory[i][j] == 0) freeSlotsC++;
+		}
+	}
+	return freeSlotsC;
 }
 
 int movePlayer(CharSpan *args, Player *player, int argCount) {

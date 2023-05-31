@@ -8,13 +8,17 @@ typedef struct Coordinates
 } Coordinates;
 typedef struct Entity
 {
+	// Programmatically important attributes
+	int type;
+
+	// Movement
 	Coordinates position;
 
-	// base attributes
+	// Base attributes
 	double baseHealth;
 	double baseAttack;
 
-	// attributes
+	// Attributes
 	double health;
 	double attack;
 	double level;
@@ -85,3 +89,5 @@ int checkPlayerOnTransportSpace(Player *player);
 int endGame(Player *player);
 int invtools(CharSpan* args, Player* player, int argCount);
 int getFreeSlotsCount(Player* player);
+int newEntity(int type, Player* player);
+int unusedEntitySpot();

@@ -17,6 +17,7 @@ int logging_level = 0;
 FILE *logFilePtr; // Pointer to logfile
 // Entity entities_global[]; // Global list of generated entities, EXCLUDING PLAYER
 int passabilityBlock[12][12][12]; // Global list of nonpassable blocks [x][y][stage]
+Entity* entities[144]; // Permit a total of 144 generic Non-Player enemy entities; 12 / stage
 
 int main(int argc, char *argv[]) {
 	log_(3, "Welcome to TextRPG C edition!");
@@ -537,10 +538,47 @@ int generate(int type, Player *player) {
 			log_(3, "[GEN-POP] Finished populating terrain!");
 			break;
 		case 2:
-			// To be implemented
+			log_(3, "[GEN-ENTITY] Populating a stage, please wait...");
+			// In impl
+			for (int i = 0; i < 12; i++) {
+				newEntity(0, player);
+			}
+			log_(3, "[GEN-ENTITY] Populated stage with 12 entities...");
 			break;
 	}
 	return 0;
+}
+
+int newEntity(int type, Player* player) {
+	log_(3, "New entity!");
+	int unused = unusedEntitySpot();
+	if (unused == -1) {
+		log_(1, "[ERR] Entity could not be generated: Entity space full!");
+		return -1;
+	}
+	switch(type) {
+		default:
+			break;
+		case 0: // Generic, default non-functional, custom
+			Entity* customEntity = (Entity*)malloc(sizeof(Entity));
+			entities[unused] = customEntity;
+			break;
+	}
+	return unused;
+}
+
+// Returns the first spot in the Entity* entities[] array that is not assigned
+int unusedEntitySpot() {
+	int i;
+	for (i = 0; i < 144; i++) {
+		if (!entities[i]) {
+			break;
+		}
+	}
+	if (entities[143]) {
+		return -1;
+	}
+	return i;
 }
 
 void getInput(char *result, int max, char prompt[]) {

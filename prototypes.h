@@ -13,6 +13,10 @@ typedef struct Entity
 
 	// Movement
 	Coordinates position;
+	int movementAI; // -2 = item
+			// -1 = player
+			// 0 = undefined/none
+			// 1, 2, 3, ... -> entity ID
 
 	// Base attributes
 	double baseHealth;
@@ -24,6 +28,12 @@ typedef struct Entity
 	double level;
 	double xp;
 	double inventory[6][5];
+
+	// The index is the item,
+	// the value at the index is
+	// the probability of the item with that id
+	// being dropped on death
+	int probabilityDrop[255];
 } Entity;
 typedef struct Player
 {
@@ -91,3 +101,5 @@ int invtools(CharSpan* args, Player* player, int argCount);
 int getFreeSlotsCount(Player* player);
 int newEntity(int type, Player* player);
 int unusedEntitySpot();
+int cleanup(Player* player);
+int resetEntity(Entity* entity, Player* player);

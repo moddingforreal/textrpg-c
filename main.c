@@ -125,7 +125,8 @@ int runGame() {
 				printf("wmap <stage>                        | shows a map of the specified stage\n");
 				printf("tele <x> <y> <stage>                | teleports the player to the specified coordinates\n");
 				printf("setblock <x> <y> <stage> <block_id> | sets block at given coords to given block id\n");
-				printf("invtools <verb> [args]              | tools for inventory management (try \"invtools help\")");
+				printf("invtools <verb> [args]              | tools for inventory management (try \"invtools help\")\n");
+				printf("entityall                           | reads the entity array contents");
 				devCommandInvoked = TRUE;
 			} else if (compareSpan(arg0, "wmap")) {
 				if (argCount >= 2) {
@@ -176,6 +177,16 @@ int runGame() {
 				devCommandInvoked = TRUE;
 			} else if (compareSpan(arg0, "invtools")) {
 				invtools(args, &player, argCount);
+				devCommandInvoked = TRUE;
+			} else if (compareSpan(arg0, "entityall")) {
+				printf("\t\t\t=== COMPLETE NON-PLAYER ENTITY READ==\n");
+				for (int i = 0; i < 144; i++) {
+					printf("\nAt entity pos %d: \n", i);
+					if (entities[i]) {
+						int entityID = entities[i]->movementAI;
+						printf("Entity ID: %d", entityID);
+					}
+				}
 				devCommandInvoked = TRUE;
 			}
 		}
@@ -282,6 +293,7 @@ int runGame() {
 		}
 	}
 	printf("Game ended!\n");
+	cleanup(&player);
 
 	return 0;
 }
@@ -490,7 +502,7 @@ int generate(int type, Player *player) {
 			log_(2, "[GEN] ERR: Generation behavior for type undefined!");
 			break;
 		case 0:
-			for(int i = 0; i < 11; i++) { // Generate for all 13 ** 3 blocks
+			for(int i = 0; i < 11; i++) { // Generate for all 12 ** 3 blocks
 				for(int j = 0; j < 11; j++) {
 					for(int k = 0; k < 11; k++) {
 						if (randIntInRange(0, 6) == 0) {
@@ -538,10 +550,11 @@ int generate(int type, Player *player) {
 			log_(3, "[GEN-POP] Finished populating terrain!");
 			break;
 		case 2:
-			log_(3, "[GEN-ENTITY] Populating a stage, please wait...");
+			log_(3, "[GEN-ENTITY] Populating entities, please wait...");
 			// In impl
 			for (int i = 0; i < 12; i++) {
-				newEntity(0, player);
+				int entityType = randIntInRange(1, 1);
+				newEntity(entityType, player);
 			}
 			log_(3, "[GEN-ENTITY] Populated stage with 12 entities...");
 			break;
@@ -556,15 +569,38 @@ int newEntity(int type, Player* player) {
 		log_(1, "[ERR] Entity could not be generated: Entity space full!");
 		return -1;
 	}
+	Entity* newEntity = (Entity*)malloc(sizeof(Entity));
 	switch(type) {
 		default:
+			log_(1, "[ERR] [GEN] Entity type invalid!");
 			break;
 		case 0: // Generic, default non-functional, custom
-			Entity* customEntity = (Entity*)malloc(sizeof(Entity));
-			entities[unused] = customEntity;
+			log_(3, "[DEBUG] Created new entity of type custom");
+			newEntity->movementAI = 0;
+			break;
+		case 1: // Zombie
+			log_(3, "[DEBUG] Created new entity of type Zombie");
+			newEntity->baseHealth = 10;
+			newEntity->baseAttack = 2.5f;
+			newEntity->movementAI = 1;
+			resetEntity(newEntity, player);
 			break;
 	}
+	entities[unused] = newEntity;
 	return unused;
+}
+
+int resetEntity(Entity* entity, Player* player) {
+	entity->health = entity->baseHealth;
+	entity->attack = entity->baseAttack;
+	entity->xp = 0;
+	entity->level = 10 * (player->self.level / 10) + 1;
+	for (int i = 0; i < 6; i++) {
+		for (int j = 0; j < 5; j++) {
+			entity->inventory[i][j] = 0;
+		}
+	}
+	return 0;
 }
 
 // Returns the first spot in the Entity* entities[] array that is not assigned
@@ -638,10 +674,30 @@ int log_(int logLvl, char msg[]) {
 	}
 }
 
+int cleanup(Player* player) {
+	/* Saving sequence will be here
+	 * This function will free pointers before exiting
+	 */
+
+	log_(3, "[EXIT] Cleaning up...");
+
+	// Free all the entities
+	log_(3, "[CLEANUP] Cleaning up entities...");
+	for (int i = 0; i < 144; i++) {
+		free(entities[i]);
+	}
+	log_(3, "[CLEANUP] Entities cleaned up!");
+	log_(2, "[WARN] [CLEANUP] Exiting main game loop...");
+	return 0;
+}
+
 // Init player
 int playerInit(Player *player) {
 	// Make players entity attribute
 	Entity playerEntity;
+
+	// Set it to player movement AI
+	playerEntity.movementAI = -1;
 
 	// Initialize player's entity's position
 	Coordinates playerPos;
@@ -660,6 +716,11 @@ int playerInit(Player *player) {
 	playerEntity.attack = playerEntity.baseAttack;
 	playerEntity.level = 1;
 	playerEntity.xp = 0;
+
+	// Set up player loot table to empty
+	for (int i = 0; i < 255; i++) {
+		playerEntity.probabilityDrop[i] = 0;
+	}
 
 	// Item IDs, 0 for nothing. Each slot can only keep 1 item
 	// Initialized to only 0s => empty inventory

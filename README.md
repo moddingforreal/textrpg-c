@@ -12,6 +12,8 @@ Planned features for:
 - [ ] Fighting system
 - [ ] Saving system
 
+TextRPG C Edition has a [Discord server](https://discord.gg/ArEjzxnzXT)
+
 ## History
 This is the C rewrite of [TextRPG Java Edition](https://github.com/moddingforreal/TextRPG) which got discontinued in favor of the C rewrite
 

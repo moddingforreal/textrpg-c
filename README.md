@@ -6,11 +6,11 @@ Fight enemies, level up, and try not to die!
 The world is made of 12 stages of each 12x12 blocks of space
 
 Planned features for:
-[x] - Movement system
-[x] - Terrain generation
-[ ] - Entity generation
-[ ] - Fighting system
-[ ] - Saving system
+- [x] Movement system
+- [x] Terrain generation
+- [ ] Entity generation
+- [ ] Fighting system
+- [ ] Saving system
 
 ## History
 This is the C rewrite of [TextRPG Java Edition](https://github.com/moddingforreal/TextRPG) which got discontinued in favor of the C rewrite

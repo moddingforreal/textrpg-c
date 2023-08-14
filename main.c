@@ -157,13 +157,9 @@ int runGame() {
 				}
 				devCommandInvoked = TRUE; // Mark that a dev command already got invoked
 			} else if (compareSpan(arg0, "tele")) {
-				char coords_args[3][20];
-				extractContent(coords_args[0], &args[1]);
-				extractContent(coords_args[1], &args[2]);
-				extractContent(coords_args[2], &args[3]);
-				double tg_x = strtod(coords_args[0], NULL);
-				double tg_y = strtod(coords_args[1], NULL);
-				double tg_stage = strtod(coords_args[2], NULL);
+				double tg_x = spanToDouble(args[1]);
+				double tg_y = spanToDouble(args[2]);
+				double tg_stage = spanToDouble(args[3]);
 				player.self.position.xPos = tg_x;
 				player.self.position.yPos = tg_y;
 				player.self.position.stage = tg_stage;

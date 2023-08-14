@@ -73,8 +73,20 @@ int spanToInt(CharSpan span) {
     if(span.length > 12) {
         span.length = 12;
     }
-    char str[12];
+    char str[13];
     extractContent(str, &span);
     // convert the extracted content
     return strtol(str, (char **)NULL, 10);
+}
+
+// coverts a span to a double
+double spanToDouble(CharSpan span) {
+    // my source says the largest representation of a double could be 1079 chars long
+    if(span.length > 1079) {
+        span.length = 1079;
+    }
+    char str[1080];
+    extractContent(str, &span);
+    // convert the extracted content
+    return strtod(str, NULL);
 }

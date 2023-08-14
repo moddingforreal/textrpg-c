@@ -13,6 +13,8 @@ void extractContent(char *target, CharSpan *span);
 int compareSpan(CharSpan *arg0, char *arg1);
 // converts a span into an integer
 int spanToInt(CharSpan span);
+// coverts a span to a double
+double spanToDouble(CharSpan span);
 
 // gets the length in character of a string
 int lengthChar(char* str);

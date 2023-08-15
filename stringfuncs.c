@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "stringfuncs.h"
 
 // initializes a CharSpan with given start and length of str in span
@@ -8,11 +9,10 @@ void makeSpan(CharSpan *span, char *str, int start, int length) {
     span->length = length;
 }
 
-// gets the length in character of a string
-int lengthChar(char* str) {
-    int i;
-    for(i = 0; str[i] != 0; i++);
-    return i;
+
+// creates a CharSpan from start with lenght length
+CharSpan spanOf(char *str, int start, int length) {
+    return (CharSpan) { &str[start], length };
 }
 
 // compares input beginning from offset and compareTo, returns 1 if they match until the end of compareTo
@@ -26,14 +26,21 @@ int cmpSeq(char input[], int offset, char compareTo[]) {
 
 // splits the given string str with seperator and saves the results in out, a maxium of maxResults will be created
 int split(CharSpan *out, int maxResults, char *str, char *seperator) {
-    int seperatorLenght = lengthChar(seperator);
+    CharSpan span;
+    makeSpan(&span, str, 0, strlen(str));
+    return splitSpan(out, maxResults, span, seperator);
+}
+
+// splits the given CharSpan span at seperator and saves the results in out, a maxium of maxResults will be created
+int splitSpan(CharSpan *out, int maxResults, CharSpan span, char *seperator) {
+    int seperatorLenght = strlen(seperator);
     int resultCount = 0;
     int startPos = 0;
     int i;
     // split untill the end of the string is reached or maxResult - 1 is reached
-    for(i = 0; resultCount < maxResults - 1 && str[i] != 0; i++) {
-        if(cmpSeq(str, i, seperator)) {
-            makeSpan(&out[resultCount], str, startPos, i - startPos);
+    for(i = 0; resultCount < maxResults - 1 && i < span.length && span.str[i] != 0; i++) {
+        if(cmpSeq(span.str, i, seperator)) {
+            makeSpan(&out[resultCount], span.str, startPos, i - startPos);
 
             resultCount++;
             i += seperatorLenght - 1; // jump to the end of the seperator to ignor it
@@ -41,8 +48,8 @@ int split(CharSpan *out, int maxResults, char *str, char *seperator) {
         }
     }
     // add the remaining part to the string as the last result
-    int remainderLength = lengthChar(&str[startPos]);
-    makeSpan(&out[resultCount], str, startPos, remainderLength);
+    int remainderLength = span.length - startPos;
+    makeSpan(&out[resultCount], span.str, startPos, remainderLength);
     return resultCount + 1;
 }
 

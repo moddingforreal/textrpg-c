@@ -177,8 +177,8 @@ int runGame() {
 			} else if (compareSpan(arg0, "entityall")) {
 				printf("\t\t\t=== COMPLETE NON-PLAYER ENTITY READ==\n");
 				for (int i = 0; i < 144; i++) {
-					printf("\nAt entity pos %d: \n", i);
 					if (entities[i]) {
+						printf("\nAt entity pos %d: \n", i);
 						int entityID = entities[i]->movementAI;
 						printf("Entity ID: %d", entityID);
 					}
